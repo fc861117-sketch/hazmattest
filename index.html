@@ -59,17 +59,47 @@
         .ref-content { display: none; padding-top: 10px; border-top: 1px dashed #444; }
         .ref-content.active { display: block; }
 
-        /* UN 圖示 */
+        /* 🌟 UN 圖示 (精準還原版) 🌟 */
         .class-ref-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .class-item {
             background: #2a2a2a; border: 1px solid #444; border-radius: 6px;
-            padding: 12px 5px; text-align: center; font-size: 0.75rem; color: #ddd;
+            padding: 15px 5px 10px 5px; text-align: center; font-size: 0.75rem; color: #ddd;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        
+        /* 菱形外框 */
         .un-diamond {
-            width: 35px; height: 35px; position: relative; transform: rotate(45deg);
-            border: 2px solid white; margin: 0 auto 10px auto;
+            width: 46px; height: 46px; position: relative; transform: rotate(45deg);
+            border: 2px solid white; margin: 0 auto 12px auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.6); flex-shrink: 0;
         }
-        .un-content { position: absolute; top: 0; left: 0; right: 0; bottom: 0; transform: rotate(-45deg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* 內部文字轉正並對齊 */
+        .un-content { 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            transform: rotate(-45deg); display: flex; flex-direction: column; 
+            align-items: center; justify-content: space-between; padding: 2px 0;
+            box-sizing: border-box;
+        }
+        .un-sym { font-size: 1.15rem; line-height: 1; margin-top: 2px; }
+        .un-num { font-size: 0.95rem; font-weight: 900; line-height: 1; margin-bottom: 1px; }
+
+        /* 聯合國各類別專屬底色與圖樣設定 */
+        .un-c1 { background: #ff9800; color: black; border-color: #ff9800; }
+        .un-c2 { background: #4caf50; color: white; border-color: #4caf50; }
+        .un-c3 { background: #f44336; color: white; border-color: #f44336; }
+        /* 第4類：紅白相間直條紋 (利用 -45deg 抵銷外框轉角) */
+        .un-c4 { background: repeating-linear-gradient(-45deg, #f44336, #f44336 6px, white 6px, white 12px); color: black; border-color: #ccc; }
+        .un-c4 .un-num { background: rgba(255,255,255,0.9); border-radius: 50%; padding: 0 5px; }
+        .un-c5 { background: #ffeb3b; color: black; border-color: #ffeb3b; }
+        .un-c6 { background: white; color: black; border-color: #ccc; }
+        /* 第7類：黃白分半 */
+        .un-c7 { background: linear-gradient(-45deg, #ffeb3b 50%, white 50%); color: black; border-color: #ccc; }
+        /* 第8類：白黑分半 */
+        .un-c8 { background: linear-gradient(-45deg, white 50%, black 50%); color: black; border-color: #ccc; }
+        .un-c8 .un-sym { color: black; } /* 腐蝕圖示要在白色區塊顯示黑色 */
+        /* 第9類：黑白直條紋與白底分半 */
+        .un-c9 { background: linear-gradient(-45deg, transparent 50%, white 50%), repeating-linear-gradient(-45deg, black, black 4px, white 4px, white 8px); color: red; border-color: #ccc; }
 
         /* 鋼瓶樣式 */
         .gas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -117,46 +147,68 @@
 </head>
 <body>
 
-    <!-- 置頂列 -->
     <div class="top-bar">
         <h1>HCFD // 危害辨識 (ISO)</h1>
         <button onclick="resetSearch()" style="background:#444; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">清除重置</button>
     </div>
 
-    <!-- 搜尋區 (首頁卡片) -->
+    <!-- 首頁區塊 -->
     <div class="card" id="main-card">
         
-        <!-- 搜尋輸入框 -->
         <input type="text" id="search-input" class="search-box" placeholder="輸入 UN、中文名稱或 CAS..." oninput="handleSearch()" inputmode="search">
-        
-        <!-- 動態顯示的搜尋結果區塊 -->
         <div id="search-results"></div>
 
-        <!-- 🌟 需要被動態隱藏的參考圖資大區塊 -->
+        <!-- 參考圖資區 (打字時會自動隱藏) -->
         <div id="reference-section">
-            <!-- 分頁按鈕 -->
             <div class="ref-tabs">
                 <button class="tab-btn active" onclick="switchTab('un-tab')">運輸分類</button>
                 <button class="tab-btn" onclick="switchTab('gas-tab')">鋼瓶顏色</button>
                 <button class="tab-btn" onclick="switchTab('tank-tab')">槽車形狀</button>
             </div>
 
-            <!-- Tab 1: UN 分類 -->
+            <!-- Tab 1: 完美呈現的 UN 分類菱形牌 -->
             <div id="un-tab" class="ref-content active">
                 <div class="class-ref-grid">
-                    <div class="class-item"><div class="un-diamond" style="background:#ff9800;"></div>1 💥 爆炸物</div>
-                    <div class="class-item"><div class="un-diamond" style="background:#4caf50;"></div>2 💨 氣體</div>
-                    <div class="class-item"><div class="un-diamond" style="background:#f44336;"></div>3 🔥 易燃液</div>
-                    <div class="class-item"><div class="un-diamond" style="background:repeating-linear-gradient(45deg,#f44336,#f44336 5px,#fff 5px,#fff 10px);"></div>4 🧨 易燃固</div>
-                    <div class="class-item"><div class="un-diamond" style="background:#ffeb3b;"></div>5 ⭕ 氧化物</div>
-                    <div class="class-item"><div class="un-diamond" style="background:#fff;"></div>6 ☠️ 毒性物</div>
-                    <div class="class-item"><div class="un-diamond" style="background:linear-gradient(45deg,#ffeb3b 50%,#fff 50%);"></div>7 ☢️ 放射性</div>
-                    <div class="class-item"><div class="un-diamond" style="background:linear-gradient(45deg,#fff 50%,#000 50%);"></div>8 🧪 腐蝕性</div>
-                    <div class="class-item"><div class="un-diamond" style="background:repeating-linear-gradient(45deg,#000,#000 5px,#fff 5px,#fff 10px);"></div>9 ⚠️ 其他</div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c1"><div class="un-content"><div class="un-sym">💥</div><div class="un-num">1</div></div></div>
+                        <span>第 1 類<br>爆炸物</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c2"><div class="un-content"><div class="un-sym">💨</div><div class="un-num">2</div></div></div>
+                        <span>第 2 類<br>氣體</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c3"><div class="un-content"><div class="un-sym">🔥</div><div class="un-num">3</div></div></div>
+                        <span style="color:#f44336;">第 3 類<br>易燃液體</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c4"><div class="un-content"><div class="un-sym">🔥</div><div class="un-num">4</div></div></div>
+                        <span style="color:#ff9800;">第 4 類<br>易燃固體</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c5"><div class="un-content"><div class="un-sym">⭕</div><div class="un-num">5</div></div></div>
+                        <span style="color:#ffeb3b;">第 5 類<br>氧化物質</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c6"><div class="un-content"><div class="un-sym">☠️</div><div class="un-num">6</div></div></div>
+                        <span>第 6 類<br>毒性/感染</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c7"><div class="un-content"><div class="un-sym">☢️</div><div class="un-num">7</div></div></div>
+                        <span style="color:#ffeb3b;">第 7 類<br>放射性</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c8"><div class="un-content"><div class="un-sym">🧪</div><div class="un-num">8</div></div></div>
+                        <span>第 8 類<br>腐蝕性</span>
+                    </div>
+                    <div class="class-item">
+                        <div class="un-diamond un-c9"><div class="un-content"><div class="un-sym">⚠️</div><div class="un-num">9</div></div></div>
+                        <span>第 9 類<br>其他危害</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Tab 2: 鋼瓶顏色 (CNS 1261) -->
+            <!-- Tab 2: 鋼瓶顏色 -->
             <div id="gas-tab" class="ref-content">
                 <div class="gas-grid">
                     <div class="gas-item"><div class="cylinder" style="background:#000;"></div><b>氧氣</b> (黑)</div>
@@ -198,11 +250,9 @@
                 </div>
             </div>
         </div>
-        <!-- 參考圖資大區塊結束 -->
-
     </div>
 
-    <!-- 進入物質後的詳細資訊 (動態顯示) -->
+    <!-- 進入物質後的詳細資訊 -->
     <div id="detail-view" class="card">
         <h2 id="d-name">化學品名稱</h2>
         <div style="color: #aaa; margin-bottom: 15px;">CAS: <span id="d-cas"></span> | 類別: <span id="d-class" style="background:#ff9800;color:black;padding:2px 6px;border-radius:4px;font-weight:bold;"></span></div>
@@ -221,7 +271,7 @@
         <div class="data-row"><div class="data-label">PPE 裝備要求</div><div class="data-value" id="d-ppe"></div></div>
     </div>
 
-    <!-- 引用外部資料庫檔案 (請確保 database.js 放在同一個目錄下) -->
+    <!-- 引用外部資料庫檔案 -->
     <script src="database.js"></script>
 
     <script>
@@ -230,7 +280,6 @@
         const detailEl = document.getElementById('detail-view');
         const refSection = document.getElementById('reference-section');
 
-        // 切換頁籤
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.ref-content').forEach(content => content.classList.remove('active'));
@@ -238,19 +287,16 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // 搜尋邏輯 (含動態隱藏圖資)
         function handleSearch() {
             const query = inputEl.value.trim().toLowerCase();
             resultsEl.innerHTML = '';
             
-            // 🌟 若清空搜尋列，隱藏搜尋結果，並【恢復顯示】圖資區塊
             if (query.length < 1) { 
                 resultsEl.style.display = 'none'; 
                 refSection.style.display = 'block'; 
                 return; 
             }
             
-            // 🌟 只要開始輸入，就【隱藏】圖資區塊
             refSection.style.display = 'none';
             
             const matches = db.filter(item => 
@@ -275,7 +321,6 @@
             }
         }
 
-        // 顯示結果與 GHS 對照轉換
         function showDetail(item) {
             detailEl.style.display = 'block';
             document.getElementById('main-card').style.display = 'none';
@@ -311,13 +356,11 @@
             window.scrollTo(0,0);
         }
 
-        // 重置回到搜尋首頁
         function resetSearch() {
             inputEl.value = '';
             detailEl.style.display = 'none';
             document.getElementById('main-card').style.display = 'block';
             resultsEl.style.display = 'none';
-            // 🌟 按下重置按鈕時，確保圖資區塊回到畫面上
             refSection.style.display = 'block';
         }
     </script>
