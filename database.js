@@ -1,5 +1,5 @@
 // ============================================================================
-// HCFD 危害辨識系統 (ISO) - 終極實戰版資料庫 (125項)
+// HCFD 危害辨識系統 (ISO) - 終極實戰版資料庫 (150項)
 // 包含：半導體特氣、傳產溶劑、強酸鹼、槽車大宗物資、高風險毒化物
 // 特色：內建業界俗名、縮寫與常見錯別字防呆機制，確保 100% 命中率。
 // ============================================================================
@@ -41,7 +41,7 @@ const db = [
     { un: "2417", nameTW: "氟化羰 (COF2)", nameEN: "Carbonyl fluoride", cas: "353-50-4", class: "2.3", nfpa: { h: "4", f: "0", r: "1", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "100m", tactics: "遇水生氫氟酸。劇毒。", ppe: "A級氣密衣" },
     { un: "2418", nameTW: "四氟化硫 (SF4)", nameEN: "Sulfur tetrafluoride", cas: "7783-60-0", class: "2.3", nfpa: { h: "4", f: "0", r: "2", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "100m", tactics: "極毒腐蝕。遇水爆炸。", ppe: "A級氣密衣" },
     { un: "1040", nameTW: "環氧乙烷 (EO / 環氧乙烷)", nameEN: "Ethylene oxide", cas: "75-21-8", class: "2.3", nfpa: { h: "3", f: "4", r: "3", s: "" }, ghs: ["🔥,☠️,👤"], erg: "119P", isolation: "100m", tactics: "極易燃且具劇毒。受熱極易聚合爆炸。", ppe: "A級氣密衣" },
-    { un: "1835", nameTW: "四甲基氫氧化銨 (TMAH / 顯影液)", nameEN: "Tetramethylammonium hydroxide", cas: "75-59-2", class: "8", nfpa: { h: "3", f: "1", r: "0", s: "" }, ghs: ["☠️,🧪,👤"], erg: "153", isolation: "50m", tactics: "【極致死】低濃度接觸皮膚也會休克致死。嚴防皮膚接觸。", ppe: "C級防護/嚴禁皮膚接觸" },
+    { un: "1835", nameTW: "四甲基氫氧化銨 (TMAH / 顯影液)", nameEN: "Tetramethylammonium hydroxide", cas: "75-59-2", class: "8", nfpa: { h: "3", f: "1", r: "0", s: "" }, ghs: ["☠️,🧪,👤"], erg: "153", isolation: "50m", tactics: "【極致死】低濃度接觸皮膚也會休克致死。嚴防接觸。", ppe: "C級防護/嚴禁皮膚" },
     { un: "1993", nameTW: "PGMEA (光阻劑 / 丙二醇甲醚醋酸酯)", nameEN: "PGMEA", cas: "108-65-6", class: "3", nfpa: { h: "2", f: "2", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "128", isolation: "50m", tactics: "光阻劑大宗溶劑。一般泡沫滅火。", ppe: "消防衣+SCBA" },
     { un: "1292", nameTW: "四乙氧基矽烷 (TEOS)", nameEN: "Tetraethyl silicate", cas: "78-10-4", class: "3", nfpa: { h: "2", f: "2", r: "1", s: "" }, ghs: ["🔥,⚠️"], erg: "129", isolation: "50m", tactics: "CVD製程常用。遇水緩慢分解。", ppe: "消防衣+SCBA" },
     { un: "1810", nameTW: "三氯氧磷 (POCl3)", nameEN: "Phosphorus oxychloride", cas: "10025-87-3", class: "6.1", nfpa: { h: "3", f: "0", r: "2", s: "W" }, ghs: ["☠️,🧪"], erg: "137", isolation: "60m", tactics: "【禁水】遇水產生大量氯化氫(HCl)毒氣。", ppe: "A級氣密衣" },
@@ -141,10 +141,10 @@ const db = [
     { un: "3082", nameTW: "危害環境液體 (廢水類)", nameEN: "Env. hazardous liq.", cas: "N/A", class: "9", nfpa: { h: "1", f: "1", r: "0", s: "" }, ghs: ["🐟"], erg: "171", isolation: "25m", tactics: "攔阻收集防流入水體。", ppe: "消防衣+SCBA" },
 
     // --- 126 - 150: 製程溶劑、聚合單體、極端毒物與農用化學品 ---
-    { un: "1648", nameTW: "乙腈 (ACN / 甲基氰 / 乙晴)", nameEN: "Acetonitrile", cas: "75-05-8", class: "3", nfpa: { h: "2", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "極易燃。燃燒可能釋放氰化物毒氣。使用抗溶性泡沫。", ppe: "消防衣+SCBA" },
-    { un: "1245", nameTW: "甲基異丁基酮 (MIBK)", nameEN: "Methyl isobutyl ketone", cas: "108-10-1", class: "3", nfpa: { h: "2", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "極易燃溶劑，蒸氣比空氣重。使用抗溶性泡沫。", ppe: "消防衣+SCBA" },
-    { un: "1593", nameTW: "二氯甲烷 (DCM / 氯甲烷 / 退漆劑)", nameEN: "Dichloromethane", cas: "75-09-2", class: "6.1", nfpa: { h: "2", f: "1", r: "0", s: "" }, ghs: ["⚠️,👤"], erg: "160", isolation: "50m", tactics: "不燃但具麻醉性與致癌風險。火場高溫下分解產生光氣。", ppe: "消防衣+SCBA" },
-    { un: "1888", nameTW: "氯仿 (三氯甲烷 / Chloroform)", nameEN: "Chloroform", cas: "67-66-3", class: "6.1", nfpa: { h: "2", f: "0", r: "0", s: "" }, ghs: ["☠️,👤"], erg: "151", isolation: "50m", tactics: "具麻醉性、毒性及致癌性。受熱產生極毒光氣。", ppe: "A級/B級" },
+    { un: "1648", nameTW: "乙腈 (ACN / 甲基氰 / 乙晴)", nameEN: "Acetonitrile", cas: "75-05-8", class: "3", nfpa: { h: "2", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "極易燃。燃燒可能釋放氰化物毒氣。抗溶性泡沫。", ppe: "消防衣+SCBA" },
+    { un: "1245", nameTW: "甲基異丁基酮 (MIBK)", nameEN: "Methyl isobutyl ketone", cas: "108-10-1", class: "3", nfpa: { h: "2", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "極易燃溶劑，蒸氣比空氣重。抗溶性泡沫。", ppe: "消防衣+SCBA" },
+    { un: "1593", nameTW: "二氯甲烷 (DCM / 氯甲烷 / 退漆劑)", nameEN: "Dichloromethane", cas: "75-09-2", class: "6.1", nfpa: { h: "2", f: "1", r: "0", s: "" }, ghs: ["⚠️,👤"], erg: "160", isolation: "50m", tactics: "不燃但具麻醉性與致癌風險。高溫分解生光氣。", ppe: "消防衣+SCBA" },
+    { un: "1888", nameTW: "氯仿 (三氯甲烷 / Chloroform)", nameEN: "Chloroform", cas: "67-66-3", class: "6.1", nfpa: { h: "2", f: "0", r: "0", s: "" }, ghs: ["☠️,👤"], erg: "151", isolation: "50m", tactics: "具麻醉性與致癌性。受熱產生極毒光氣。", ppe: "A級/B級" },
     { un: "1710", nameTW: "三氯乙烯 (TCE / 洗板劑 / 脫脂劑)", nameEN: "Trichloroethylene", cas: "79-01-6", class: "6.1", nfpa: { h: "2", f: "1", r: "0", s: "" }, ghs: ["⚠️,👤"], erg: "160", isolation: "50m", tactics: "常見工業清洗劑。高溫下分解產生有毒氯化氫與光氣。", ppe: "消防衣+SCBA" },
     { un: "1155", nameTW: "乙醚 (二乙醚 / 乙基醚 / 麻醉醚)", nameEN: "Diethyl ether", cas: "60-29-7", class: "3", nfpa: { h: "1", f: "4", r: "1", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "極度易燃(閃火點-45度)。久置易生爆炸性過氧化物。", ppe: "消防衣+SCBA" },
     { un: "1089", nameTW: "乙醛 (Acetaldehyde)", nameEN: "Acetaldehyde", cas: "75-07-0", class: "3", nfpa: { h: "2", f: "4", r: "2", s: "" }, ghs: ["🔥,⚠️,👤"], erg: "129", isolation: "50m", tactics: "極易燃，沸點極低(20度)。具強烈刺激味。抗溶性泡沫。", ppe: "消防衣+SCBA" },
