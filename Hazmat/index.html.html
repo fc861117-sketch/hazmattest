@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HCFD // 危險物品辨識資料庫</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #03a9f4;
+            --danger: #f44336;
+            --warning: #ffeb3b;
+            --safe: #4caf50;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0 15px 50px 15px;
+        }
+
+        .top-bar {
+            position: sticky;
+            top: 0;
+            background-color: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 0 -15px 20px -15px;
+            border-bottom: 1px solid #333;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .top-bar h1 { margin: 0; color: var(--accent-color); font-size: 1.2rem; }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        h2 { font-size: 1.1rem; border-left: 5px solid var(--accent-color); padding-left: 10px; margin-top: 0; margin-bottom: 15px; color: white; }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            color: white;
+            border-radius: 8px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .search-box:focus { border-color: var(--accent-color); }
+
+        .class-ref-container {
+            margin-top: 20px;
+            border-top: 1px dashed #444;
+            padding-top: 15px;
+        }
+        .class-ref-title { font-size: 0.9rem; color: #888; margin-bottom: 10px; font-weight: bold; text-align: center; }
+        .class-ref-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .class-item {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 15px 5px 10px 5px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #ddd;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .un-diamond {
+            width: 45px;
+            height: 45px;
+            position: relative;
+            transform: rotate(45deg);
+            border: 2px solid white;
+            margin: 0 auto 15px auto;
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+        .un-content {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            transform: rotate(-45deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 0;
+            box-sizing: border-box;
+        }
+        .un-sym { font-size: 1.1rem; line-height: 1.2; }
+        .un-num { font-size: 0.95rem; font-weight: 900; line-height: 1; }
+
+        .un-c1 { background: #ff9800; color: black; border-color: #ff9800; }
+        .un-c2 { background: #4caf50; color: white; border-color: #4caf50; }
+        .un-c3 { background: #f44336; color: white; border-color: #f44336; }
+        .un-c4 { background: repeating-linear-gradient(-45deg, #f44336, #f44336 6px, white 6px, white 12px); color: black; border-color: #ccc; }
+        .un-c5 { background: #ffeb3b; color: black; border-color: #ffeb3b; }
+        .un-c6 { background: white; color: black; border-color: #ccc; }
+        .un-c7 { background: linear-gradient(-45deg, #ffeb3b 50%, white 50%); color: black; border-color: #ccc; }
+        .un-c8 { background: linear-gradient(-45deg, white 50%, black 50%); color: white; border-color: #ccc; }
+        .un-c9 { background: linear-gradient(-45deg, transparent 50%, white 50%), repeating-linear-gradient(-45deg, black, black 4px, white 4px, white 8px); color: black; border-color: #ccc; }
+
+        #search-results { margin-top: 10px; display: none; }
+        .result-item {
+            padding: 12px 15px;
+            background: #333;
+            border-bottom: 1px solid #444;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        .result-item:active { background: var(--accent-color); color: black; }
+        .badge-un { background: #ff9800; color: black; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; margin-right: 8px; }
+
+        #detail-view { display: none; }
+
+        .nfpa-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin: 25px 0;
+            background: #222;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .nfpa-diamond {
+            width: 100px; height: 100px;
+            position: relative;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+        }
+        .nfpa-quad {
+            width: 50%; height: 50%; position: absolute;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; font-weight: 900; color: black;
+            transform: rotate(-45deg); 
+        }
+        .nfpa-red { background: #f44336; top: 0; left: 0; border: 2px solid white; }
+        .nfpa-blue { background: #2196f3; top: 0; right: 0; border: 2px solid white; color: white;}
+        .nfpa-yellow { background: #ffeb3b; bottom: 0; left: 0; border: 2px solid white; }
+        .nfpa-white { background: #ffffff; bottom: 0; right: 0; border: 2px solid white; font-size: 1.1rem;}
+
+        .nfpa-legend { display: flex; flex-direction: column; gap: 8px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 0.95rem; }
+        .color-box { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.3); }
+
+        .data-row {
+            background: #222;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #555;
+        }
+        .data-label { font-size: 0.85rem; color: #aaa; margin-bottom: 4px; font-weight: bold; }
+        .data-value { font-size: 1.1rem; color: white; font-weight: bold; }
+        .warn-high { border-left-color: var(--danger); }
+        .warn-high .data-value { color: #ff5252; }
+
+        .ghs-badge {
+            display: inline-block;
+            background: #fff;
+            color: black;
+            border: 2px solid red;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        .class-badge {
+            display: inline-block;
+            background: #ff9800;
+            color: black;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 900;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <h1>HCFD // 危害辨識 (HAZMAT)</h1>
+        <button class="reset-btn-top" onclick="resetSearch()" style="background:#444; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold;">清除</button>
+    </div>
+
+    <div class="card" id="search-card">
+        <input type="text" id="search-input" class="search-box" placeholder="輸入 UN編號、中文或 CAS..." oninput="handleSearch()" inputmode="search">
+        <div id="search-results"></div>
+
+        <div class="class-ref-container">
+            <div class="class-ref-title">聯合國/交通部 運輸危害分類參考</div>
+            <div class="class-ref-grid">
+                <div class="class-item">
+                    <div class="un-diamond un-c1"><div class="un-content"><div class="un-sym">💥</div><div class="un-num">1</div></div></div>
+                    <span>第 1 類<br>爆炸物</span>
+                </div>
+                <div class="class-item">
+                    <div class="un-diamond un-c2"><div class="un-content"><div class="un-sym">💨</div><div class="un-num">2</div></div></div>
+                    <span>第 2 類<br>氣體</span>
+                </div>
+                <div class="class-item">
+                    <div class="un-diamond un-c3"><div class="un-content"><div class="un-sym">🔥</div><div class="un-num">3</div></div></div>
+                    <span style="color:#f44336;">第 3 類<br>易燃液體</span>
+                </div>
+                <div class="class-item">
+                    <div class="un-diamond un-c4"><div class="un-content"><div class="un-sym">🔥</div><div class="un-num">4</div></div></div>
+                    <span style="color:#ff9800;">第 4 類<br>易燃固體</span>
+                </div>
+                <div class="class-item">
+                    <div class="un-diamond un-c5"><div class="un-content"><div class="un-sym">⭕</div><div class="un-num">5</div></div></div>
+                    <span style="color:#ffeb3b;">第 5 類<br>氧化物質</span>
+                </div>
+                <div class="class-item">
+                    <div class="un-diamond un-c6"><div class="un-content"><div class="un-sym">☠️</div><div class="un-num">6</div></div></div>
+                    <span>第 6 類<br>毒性/感染</span>
+                </div>
+                <div class="class-item">
+                    <div class="un-diamond un-c7"><div class="un-content"><div class="un-sym">☢️</div><div class="un-num">7</div></div></div>
+                    <span style="color:#ffeb3b;">第 7 類<br>放射性</span>
+                </div>
+                <div class="class-item">
+                    <div class="un-diamond un-c8"><div class="un-content"><div class="un-sym">🧪</div><div class="un-num">8</div></div></div>
+                    <span>第 8 類<br>腐蝕性</span>
+                </div>
+                <div class="class-item">
+                    <div class="un-diamond un-c9"><div class="un-content"><div class="un-sym">⚠️</div><div class="un-num">9</div></div></div>
+                    <span>第 9 類<br>其他危害</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="detail-view" class="card">
+        <h2 id="d-name" style="font-size: 1.4rem; color: var(--accent-color);">化學品名稱</h2>
+        <div style="color: #aaa; margin-bottom: 15px;">CAS: <span id="d-cas"></span> | 類別: <span id="d-class" class="class-badge"></span></div>
+        <hr style="border-color: #333;">
+
+        <div class="nfpa-wrapper">
+            <div class="nfpa-diamond">
+                <div class="nfpa-quad nfpa-red"><span id="nfpa-f"></span></div>
+                <div class="nfpa-quad nfpa-blue"><span id="nfpa-h"></span></div>
+                <div class="nfpa-quad nfpa-yellow"><span id="nfpa-r"></span></div>
+                <div class="nfpa-quad nfpa-white"><span id="nfpa-s"></span></div>
+            </div>
+            <div class="nfpa-legend">
+                <div class="legend-item" style="color: #64b5f6;"><div class="color-box" style="background:#2196f3;"></div> 健康 (藍)</div>
+                <div class="legend-item" style="color: #e57373;"><div class="color-box" style="background:#f44336;"></div> 易燃 (紅)</div>
+                <div class="legend-item" style="color: #fff59d;"><div class="color-box" style="background:#ffeb3b;"></div> 反應性 (黃)</div>
+                <div class="legend-item" style="color: #ffffff;"><div class="color-box" style="background:#ffffff;"></div> 特殊危害 (白)</div>
+            </div>
+        </div>
+
+        <div class="data-row">
+            <div class="data-label">GHS 危害標示</div>
+            <div id="d-ghs" style="margin-top: 5px;"></div>
+        </div>
+        <div class="data-row">
+            <div class="data-label">ERG 指南編號</div>
+            <div class="data-value">Guide <span id="d-guide" style="color:var(--accent-color); font-size:1.3rem;"></span></div>
+        </div>
+        <div class="data-row warn-high">
+            <div class="data-label">隔離與疏散距離 (初期)</div>
+            <div class="data-value" id="d-iso"></div>
+        </div>
+        <div class="data-row warn-high">
+            <div class="data-label">滅火與禁忌注意事項</div>
+            <div class="data-value" id="d-tactics"></div>
+        </div>
+        <div class="data-row">
+            <div class="data-label">ISO 裝備要求 (PPE)</div>
+            <div class="data-value" id="d-ppe"></div>
+        </div>
+    </div>
+
+    <script>
+const db = [
+    { un: "1219", nameTW: "異丙醇 (IPA)", nameEN: "Isopropanol", cas: "67-63-0", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "129", isolation: "50m", tactics: "抗溶性泡沫。與水互溶。", ppe: "消防衣+SCBA" },
+    { un: "1090", nameTW: "丙酮", nameEN: "Acetone", cas: "67-64-1", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "抗溶性泡沫。極易燃，注意回火。", ppe: "消防衣+SCBA" },
+    { un: "1203", nameTW: "汽油", nameEN: "Gasoline", cas: "86290-81-5", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "128", isolation: "50m", tactics: "一般泡沫或化學乾粉。水柱無效。", ppe: "消防衣+SCBA" },
+    { un: "1202", nameTW: "柴油", nameEN: "Diesel fuel", cas: "68334-30-5", class: "3", nfpa: { h: "0", f: "2", r: "0", s: "" }, ghs: ["🔥"], erg: "128", isolation: "25m", tactics: "一般泡沫。閃火點較高。", ppe: "消防衣+SCBA" },
+    { un: "1230", nameTW: "甲醇", nameEN: "Methanol", cas: "67-56-1", class: "3", nfpa: { h: "3", f: "3", r: "0", s: "" }, ghs: ["🔥,☠️"], erg: "131", isolation: "50m", tactics: "隱形火焰。抗溶性泡沫。具劇毒。", ppe: "B級/消防衣" },
+    { un: "1170", nameTW: "乙醇 (酒精)", nameEN: "Ethanol", cas: "64-17-5", class: "3", nfpa: { h: "0", f: "3", r: "0", s: "" }, ghs: ["🔥"], erg: "127", isolation: "50m", tactics: "抗溶性泡沫。可水稀釋。", ppe: "消防衣+SCBA" },
+    { un: "1294", nameTW: "甲苯", nameEN: "Toluene", cas: "108-88-3", class: "3", nfpa: { h: "2", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "130", isolation: "50m", tactics: "一般泡沫。蒸氣比空氣重。", ppe: "消防衣+SCBA" },
+    { un: "1307", nameTW: "二甲苯", nameEN: "Xylenes", cas: "1330-20-7", class: "3", nfpa: { h: "2", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "130", isolation: "50m", tactics: "一般泡沫。具中樞神經毒性。", ppe: "消防衣+SCBA" },
+    { un: "1193", nameTW: "丁酮 (MEK)", nameEN: "Ethyl methyl ketone", cas: "78-93-3", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "抗溶性泡沫。高揮發性。", ppe: "消防衣+SCBA" },
+    { un: "1213", nameTW: "醋酸異丁酯", nameEN: "Isobutyl acetate", cas: "110-19-0", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥"], erg: "129", isolation: "50m", tactics: "一般泡沫。具強烈果香味。", ppe: "消防衣+SCBA" },
+    { un: "2203", nameTW: "矽烷 (SiH4)", nameEN: "Silane", cas: "7803-62-5", class: "2.1", nfpa: { h: "1", f: "4", r: "2", s: "" }, ghs: ["🔥"], erg: "116", isolation: "100m", tactics: "自燃氣體。接觸空氣即爆炸。切勿撲滅。", ppe: "消防衣+SCBA" },
+    { un: "2199", nameTW: "磷化氫 (PH3)", nameEN: "Phosphine", cas: "7803-51-2", class: "2.3", nfpa: { h: "4", f: "4", r: "2", s: "" }, ghs: ["☠️,🔥"], erg: "119", isolation: "100m", tactics: "劇毒且自燃。嚴禁滅火。下風處撤退。", ppe: "A級氣密衣" },
+    { un: "1005", nameTW: "氨 (無水)", nameEN: "Ammonia", cas: "7664-41-7", class: "2.3", nfpa: { h: "3", f: "1", r: "0", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "30m", tactics: "不可對洩漏源射水。形成氨水具腐蝕性。", ppe: "消防衣/A級" },
+    { un: "1017", nameTW: "氯氣", nameEN: "Chlorine", cas: "7782-50-5", class: "2.3", nfpa: { h: "4", f: "0", r: "0", s: "OX" }, ghs: ["☠️,☢️,🔥"], erg: "124", isolation: "100m", tactics: "劇毒強氧化。比空氣重。不可對瓶身射水。", ppe: "A級氣密衣" },
+    { un: "1749", nameTW: "三氟化氯 (ClF3)", nameEN: "Chlorine trifluoride", cas: "7790-91-2", class: "2.3", nfpa: { h: "4", f: "0", r: "3", s: "W,OX" }, ghs: ["☠️,☢️,🔥"], erg: "124", isolation: "150m", tactics: "連玻璃都會燒！遇水爆炸。極強氧化劑。", ppe: "防禦式/遠離" },
+    { un: "2188", nameTW: "砷化氫 (AsH3)", nameEN: "Arsine", cas: "7784-42-1", class: "2.3", nfpa: { h: "4", f: "4", r: "2", s: "" }, ghs: ["☠️,🔥"], erg: "119", isolation: "100m", tactics: "極毒。具延遲性溶血作用。嚴防外洩。", ppe: "A級氣密衣" },
+    { un: "1911", nameTW: "乙硼烷 (B2H6)", nameEN: "Diborane", cas: "19237-62-4", class: "2.3", nfpa: { h: "4", f: "4", r: "3", s: "W" }, ghs: ["☠️,🔥"], erg: "119", isolation: "100m", tactics: "劇毒、禁水且自燃。遇水生成硼酸與氫氣。", ppe: "A級氣密衣" },
+    { un: "1076", nameTW: "光氣 (COCl2)", nameEN: "Phosgene", cas: "75-44-5", class: "2.3", nfpa: { h: "4", f: "0", r: "1", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "100m", tactics: "劇毒。具延遲性肺水腫。", ppe: "A級氣密衣" },
+    { un: "1050", nameTW: "氯化氫 (無水)", nameEN: "Hydrogen chloride", cas: "7647-01-0", class: "2.3", nfpa: { h: "3", f: "0", r: "1", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "30m", tactics: "遇水生成鹽酸。強烈刺激性。水霧驅散。", ppe: "B級/消防衣" },
+    { un: "2451", nameTW: "三氟化氮 (NF3)", nameEN: "Nitrogen trifluoride", cas: "7783-54-2", class: "2.2", nfpa: { h: "1", f: "0", r: "0", s: "OX" }, ghs: ["🔥"], erg: "122", isolation: "25m", tactics: "強氧化劑。助燃。受熱釋放毒煙。", ppe: "消防衣+SCBA" },
+    { un: "1428", nameTW: "金屬鈉", nameEN: "Sodium", cas: "7440-23-5", class: "4.3", nfpa: { h: "3", f: "3", r: "2", s: "W" }, ghs: ["🔥,☢️"], erg: "138", isolation: "100m", tactics: "嚴禁用水、泡沫！使用D類乾粉或砂土。", ppe: "消防衣+SCBA" },
+    { un: "1415", nameTW: "金屬鋰", nameEN: "Lithium", cas: "7439-93-2", class: "4.3", nfpa: { h: "3", f: "2", r: "2", s: "W" }, ghs: ["🔥,☢️"], erg: "138", isolation: "100m", tactics: "禁水。遇水生氫氣自燃。專用D類乾粉。", ppe: "消防衣+SCBA" },
+    { un: "1420", nameTW: "金屬鉀", nameEN: "Potassium", cas: "7440-09-7", class: "4.3", nfpa: { h: "3", f: "3", r: "2", s: "W" }, ghs: ["🔥,☢️"], erg: "138", isolation: "100m", tactics: "極度禁水。遇水即炸。D類乾粉或砂土。", ppe: "消防衣+SCBA" },
+    { un: "1381", nameTW: "黃磷", nameEN: "Phosphorus, yellow", cas: "7723-14-0", class: "4.2", nfpa: { h: "4", f: "4", r: "2", s: "" }, ghs: ["☠️,☢️"], erg: "136", isolation: "100m", tactics: "自燃。存於水中。大量水淹沒滅火。", ppe: "消防衣+SCBA" },
+    { un: "3051", nameTW: "三乙基鋁", nameEN: "Triethylaluminum", cas: "97-93-8", class: "4.2", nfpa: { h: "3", f: "4", r: "3", s: "W" }, ghs: ["🔥,☢️"], erg: "135", isolation: "150m", tactics: "觸空自燃。遇水爆炸。嚴禁用水。", ppe: "消防衣+SCBA" },
+    { un: "1418", nameTW: "鎂粉", nameEN: "Magnesium powder", cas: "7439-95-4", class: "4.3", nfpa: { h: "0", f: "1", r: "1", s: "W" }, ghs: ["🔥"], erg: "138", isolation: "50m", tactics: "禁水。燃燒具強光輻射。D類乾粉。", ppe: "消防衣+SCBA" },
+    { un: "1396", nameTW: "鋁粉", nameEN: "Aluminum powder", cas: "7429-90-5", class: "4.3", nfpa: { h: "0", f: "1", r: "1", s: "W" }, ghs: ["🔥"], erg: "138", isolation: "50m", tactics: "禁水。易粉塵爆炸。嚴禁直沖水柱。", ppe: "消防衣+SCBA" },
+    { un: "1402", nameTW: "電石 (碳化鈣)", nameEN: "Calcium carbide", cas: "75-20-7", class: "4.3", nfpa: { h: "3", f: "4", r: "2", s: "W" }, ghs: ["🔥"], erg: "138", isolation: "50m", tactics: "遇水生乙炔(易爆)。維持乾燥。", ppe: "消防衣+SCBA" },
+    { un: "1431", nameTW: "甲醇鈉", nameEN: "Sodium methylate", cas: "124-41-4", class: "4.2", nfpa: { h: "3", f: "3", r: "2", s: "W" }, ghs: ["🔥,☢️"], erg: "135", isolation: "50m", tactics: "自燃禁水。遇水生甲醇。D類乾粉。", ppe: "消防衣+SCBA" },
+    { un: "1411", nameTW: "氫化鋁鋰", nameEN: "Lithium aluminum hydride", cas: "16853-85-3", class: "4.3", nfpa: { h: "3", f: "2", r: "2", s: "W" }, ghs: ["🔥,☢️"], erg: "138", isolation: "50m", tactics: "強還原劑。禁水爆炸。維持乾燥。", ppe: "消防衣+SCBA" },
+    { un: "2031", nameTW: "硝酸", nameEN: "Nitric acid", cas: "7697-37-2", class: "8", nfpa: { h: "4", f: "0", r: "0", s: "OX" }, ghs: ["☢️,🔥"], erg: "157", isolation: "50m", tactics: "氧化劑。觸有機物自燃。紅棕色毒煙。", ppe: "B級/A級" },
+    { un: "1830", nameTW: "硫酸", nameEN: "Sulfuric acid", cas: "7664-93-9", class: "8", nfpa: { h: "3", f: "0", r: "2", s: "W" }, ghs: ["☢️"], erg: "137", isolation: "50m", tactics: "強脫水。遇水劇烈噴濺。禁射水入容器。", ppe: "B級/A級" },
+    { un: "1789", nameTW: "鹽酸", nameEN: "Hydrochloric acid", cas: "7647-01-0", class: "8", nfpa: { h: "3", f: "0", r: "0", s: "" }, ghs: ["☢️,⚠️"], erg: "157", isolation: "50m", tactics: "強腐蝕煙霧。水霧吸收煙霧。", ppe: "B級防護衣" },
+    { un: "1823", nameTW: "氫氧化鈉", nameEN: "Sodium hydroxide", cas: "1310-73-2", class: "8", nfpa: { h: "3", f: "0", r: "1", s: "" }, ghs: ["☢️"], erg: "154", isolation: "25m", tactics: "強鹼腐蝕。遇水放熱。保護眼睛。", ppe: "消防衣/B級" },
+    { un: "2014", nameTW: "雙氧水", nameEN: "Hydrogen peroxide", cas: "7722-84-1", class: "5.1", nfpa: { h: "3", f: "0", r: "1", s: "OX" }, ghs: ["☢️,🔥"], erg: "140", isolation: "50m", tactics: "強氧化劑。助燃。大量水冷卻。", ppe: "B級防護衣" },
+    { un: "1075", nameTW: "液化石油氣", nameEN: "L.P.G.", cas: "68476-85-7", class: "2.1", nfpa: { h: "1", f: "4", r: "0", s: "" }, ghs: ["🔥"], erg: "115", isolation: "100m", tactics: "漏氣未起火勿熄滅。防BLEVE爆炸。", ppe: "消防衣+SCBA" },
+    { un: "1049", nameTW: "氫氣", nameEN: "Hydrogen", cas: "1333-74-0", class: "2.1", nfpa: { h: "0", f: "4", r: "0", s: "" }, ghs: ["🔥"], erg: "115", isolation: "100m", tactics: "隱形火焰。高壓噴出易爆炸。", ppe: "消防衣+SCBA" },
+    { un: "1072", nameTW: "氧氣", nameEN: "Oxygen", cas: "7782-44-7", class: "2.2", nfpa: { h: "0", f: "0", r: "0", s: "OX" }, ghs: ["⭕"], erg: "122", isolation: "25m", tactics: "助燃劑。嚴禁油脂接觸。", ppe: "消防衣+SCBA" },
+    { un: "1977", nameTW: "液氮", nameEN: "Nitrogen, liquid", cas: "7727-37-9", class: "2.2", nfpa: { h: "3", f: "0", r: "0", s: "" }, ghs: ["N/A"], erg: "120", isolation: "25m", tactics: "低溫凍傷。窒息。容器脆化。", ppe: "防凍衣/消防衣" },
+    { un: "1013", nameTW: "二氧化碳", nameEN: "Carbon dioxide", cas: "124-38-9", class: "2.2", nfpa: { h: "1", f: "0", r: "0", s: "" }, ghs: ["N/A"], erg: "120", isolation: "25m", tactics: "窒息性。鋼瓶冰冷注意凍傷。", ppe: "消防衣+SCBA" },
+    { un: "1001", nameTW: "乙炔", nameEN: "Acetylene", cas: "74-86-2", class: "2.1", nfpa: { h: "1", f: "4", r: "3", s: "" }, ghs: ["🔥"], erg: "116", isolation: "100m", tactics: "受熱極不穩定。易爆炸。", ppe: "消防衣+SCBA" },
+    { un: "1017", nameTW: "氯氣", nameEN: "Chlorine", cas: "7782-50-5", class: "2.3", nfpa: { h: "4", f: "0", r: "0", s: "OX" }, ghs: ["☠️,☢️"], erg: "124", isolation: "100m", tactics: "劇毒。比空氣重。向下風處撤退。", ppe: "A級氣密衣" },
+    { un: "1093", nameTW: "丙烯 acrylonitrile", nameEN: "Acrylonitrile", cas: "107-13-1", class: "3", nfpa: { h: "4", f: "3", r: "2", s: "" }, ghs: ["🔥,☠️,☢️"], erg: "131", isolation: "100m", tactics: "劇毒易燃。具氰化物毒性。", ppe: "A級氣密衣" },
+    { un: "1114", nameTW: "苯", nameEN: "Benzene", cas: "71-43-2", class: "3", nfpa: { h: "2", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "130", isolation: "50m", tactics: "一級致癌物。易燃。蒸氣具毒性。", ppe: "消防衣+SCBA" },
+    { un: "1173", nameTW: "乙酸乙酯", nameEN: "Ethyl acetate", cas: "141-78-6", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "129", isolation: "50m", tactics: "抗溶性泡沫。易燃。", ppe: "消防衣+SCBA" },
+    { un: "1263", nameTW: "油漆 / 稀釋劑", nameEN: "Paint", cas: "N/A", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥,⚠️"], erg: "128", isolation: "50m", tactics: "混合溶劑。一般泡沫。", ppe: "消防衣+SCBA" },
+    { un: "1301", nameTW: "醋酸乙烯酯", nameEN: "Vinyl acetate", cas: "108-05-4", class: "3", nfpa: { h: "2", f: "3", r: "2", s: "" }, ghs: ["🔥"], erg: "129P", isolation: "50m", tactics: "自聚反應。受熱劇烈爆炸。", ppe: "消防衣+SCBA" },
+    { un: "2056", nameTW: "四氫呋喃", nameEN: "Tetrahydrofuran", cas: "109-99-9", class: "3", nfpa: { h: "2", f: "3", r: "1", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "抗溶性泡沫。生成過氧化物爆炸。", ppe: "消防衣+SCBA" },
+    { un: "2480", nameTW: "異氰酸甲酯", nameEN: "Methyl isocyanate", cas: "624-83-9", class: "6.1", nfpa: { h: "4", f: "3", r: "2", s: "" }, ghs: ["☠️,🔥"], erg: "155", isolation: "100m", tactics: "極毒。遇水劇烈反應。", ppe: "A級氣密衣" },
+    { un: "1791", nameTW: "次氯酸鈉", nameEN: "Sodium hypochlorite", cas: "7681-52-9", class: "8", nfpa: { h: "3", f: "0", r: "1", s: "" }, ghs: ["☢️,⚠️"], erg: "154", isolation: "25m", tactics: "不可混酸。釋氯氣。", ppe: "消防衣/B級" },
+    { un: "1067", nameTW: "二氧化氮", nameEN: "Nitrogen dioxide", cas: "10102-44-0", class: "2.3", nfpa: { h: "3", f: "0", r: "0", s: "OX" }, ghs: ["☠️,☢️,⭕"], erg: "124", isolation: "100m", tactics: "劇毒紅棕煙霧。強氧化。", ppe: "A級氣密衣" },
+    { un: "1053", nameTW: "硫化氫", nameEN: "Hydrogen sulfide", cas: "7783-06-4", class: "2.3", nfpa: { h: "4", f: "4", r: "0", s: "" }, ghs: ["☠️,🔥"], erg: "117", isolation: "100m", tactics: "臭蛋味。劇毒易燃。", ppe: "A級氣密衣" },
+    { un: "1805", nameTW: "磷酸", nameEN: "Phosphoric acid", cas: "7664-38-2", class: "8", nfpa: { h: "3", f: "0", r: "0", s: "" }, ghs: ["☢️"], erg: "154", isolation: "25m", tactics: "腐蝕性。大量水沖洗。", ppe: "消防衣/B級" },
+    { un: "1073", nameTW: "液氧", nameEN: "Oxygen, liquid", cas: "7782-44-7", class: "2.2", nfpa: { h: "3", f: "0", r: "0", s: "OX" }, ghs: ["⭕"], erg: "122", isolation: "50m", tactics: "低溫氧化。禁油。防凍傷。", ppe: "防凍衣/消防衣" },
+    { un: "1404", nameTW: "氫化鈣", nameEN: "Calcium hydride", cas: "7789-78-8", class: "4.3", nfpa: { h: "3", f: "1", r: "2", s: "W" }, ghs: ["🔥"], erg: "138", isolation: "50m", tactics: "禁水性。遇水生氫氣。", ppe: "消防衣+SCBA" },
+    { un: "1444", nameTW: "過硫酸銨", nameEN: "Ammonium persulfate", cas: "7727-54-0", class: "5.1", nfpa: { h: "1", f: "0", r: "1", s: "OX" }, ghs: ["⭕,⚠️"], erg: "140", isolation: "25m", tactics: "氧化劑。助燃。", ppe: "消防衣+SCBA" },
+    { un: "2192", nameTW: "鍺烷", nameEN: "Germane", cas: "7782-65-2", class: "2.3", nfpa: { h: "4", f: "4", r: "1", s: "" }, ghs: ["☠️,🔥"], erg: "119", isolation: "100m", tactics: "劇毒。防爆防毒。", ppe: "A級氣密衣" },
+    { un: "2196", nameTW: "六氟化鎢", nameEN: "Tungsten hexafluoride", cas: "7783-82-6", class: "2.3", nfpa: { h: "4", f: "0", r: "1", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "100m", tactics: "遇水生氫氟酸毒煙。", ppe: "A級氣密衣" },
+    { un: "1744", nameTW: "溴", nameEN: "Bromine", cas: "7726-95-6", class: "8", nfpa: { h: "4", f: "0", r: "0", s: "OX" }, ghs: ["☠️,☢️,⭕"], erg: "154", isolation: "50m", tactics: "強腐蝕氧化。劇毒。", ppe: "A級氣密衣" },
+    { un: "1008", nameTW: "三氟化硼", nameEN: "Boron trifluoride", cas: "7637-07-2", class: "2.3", nfpa: { h: "4", f: "0", r: "1", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "100m", tactics: "劇毒。強烈腐蝕煙霧。", ppe: "A級氣密衣" },
+    { un: "1010", nameTW: "丁二烯", nameEN: "Butadienes", cas: "106-99-0", class: "2.1", nfpa: { h: "2", f: "4", r: "2", s: "" }, ghs: ["🔥,⚠️"], erg: "116P", isolation: "100m", tactics: "聚合反應。受熱劇烈反應。一級防護。", ppe: "消防衣+SCBA" },
+    { un: "1033", nameTW: "二甲醚", nameEN: "Dimethyl ether", cas: "115-10-6", class: "2.1", nfpa: { h: "1", f: "4", r: "1", s: "" }, ghs: ["🔥"], erg: "115", isolation: "100m", tactics: "高度易燃。比空氣重。防回火。", ppe: "消防衣+SCBA" },
+    { un: "1062", nameTW: "溴化甲烷", nameEN: "Methyl bromide", cas: "74-83-9", class: "2.3", nfpa: { h: "3", f: "1", r: "0", s: "" }, ghs: ["☠️"], erg: "123", isolation: "50m", tactics: "劇毒。無味氣體。嚴防吸入。", ppe: "A級氣密衣" },
+    { un: "1086", nameTW: "氯乙烯", nameEN: "Vinyl chloride", cas: "75-01-4", class: "2.1", nfpa: { h: "2", f: "4", r: "2", s: "" }, ghs: ["🔥,⚠️"], erg: "116P", isolation: "100m", tactics: "致癌物。易燃。聚合風險。", ppe: "消防衣+SCBA" },
+    { un: "1436", nameTW: "鋅粉", nameEN: "Zinc powder", cas: "7440-66-6", class: "4.3", nfpa: { h: "0", f: "1", r: "1", s: "W" }, ghs: ["🔥,⚠️"], erg: "138", isolation: "50m", tactics: "禁水性。易生氫氣爆炸。維持乾燥。", ppe: "消防衣+SCBA" },
+    { un: "1490", nameTW: "高錳酸鉀", nameEN: "Potassium permanganate", cas: "7722-64-7", class: "5.1", nfpa: { h: "1", f: "0", r: "0", s: "OX" }, ghs: ["⭕,☢️"], erg: "140", isolation: "25m", tactics: "強氧化劑。禁有機物。大量水冷卻。", ppe: "消防衣+SCBA" },
+    { un: "1500", nameTW: "亞硝酸鈉", nameEN: "Sodium nitrite", cas: "7632-00-0", class: "5.1", nfpa: { h: "3", f: "0", r: "1", s: "OX" }, ghs: ["⭕,☠️"], erg: "140", isolation: "25m", tactics: "氧化劑且具毒性。受熱生毒煙。", ppe: "消防衣/B級" },
+    { un: "2194", nameTW: "六氟化硒", nameEN: "Selenium hexafluoride", cas: "7783-79-1", class: "2.3", nfpa: { h: "4", f: "0", r: "0", s: "" }, ghs: ["☠️"], erg: "125", isolation: "100m", tactics: "極毒。損害呼吸系統。A級防護。", ppe: "A級氣密衣" },
+    { un: "2197", nameTW: "碘化氫", nameEN: "Hydrogen iodide", cas: "10034-85-2", class: "2.3", nfpa: { h: "3", f: "0", r: "1", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "50m", tactics: "劇毒。強刺激腐蝕。水霧吸收。", ppe: "B級/A級" },
+    { un: "2417", nameTW: "氟化羰", nameEN: "Carbonyl fluoride", cas: "353-50-4", class: "2.3", nfpa: { h: "4", f: "0", r: "1", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "100m", tactics: "極毒。遇水分解生氫氟酸。", ppe: "A級氣密衣" },
+    { un: "2418", nameTW: "四氟化硫", nameEN: "Sulfur tetrafluoride", cas: "7783-60-0", class: "2.3", nfpa: { h: "4", f: "0", r: "2", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "100m", tactics: "極毒。遇水爆炸分解。嚴防外洩。", ppe: "A級氣密衣" },
+    { un: "2421", nameTW: "三氧化二氮", nameEN: "Nitrogen trioxide", cas: "10544-72-6", class: "2.3", nfpa: { h: "4", f: "0", r: "0", s: "OX" }, ghs: ["☠️,⭕"], erg: "124", isolation: "100m", tactics: "強氧化劇毒。A級防護。", ppe: "A級氣密衣" },
+    { un: "2672", nameTW: "氨水溶液", nameEN: "Ammonia solution", cas: "1336-21-6", class: "8", nfpa: { h: "3", f: "1", r: "0", s: "" }, ghs: ["☢️,⚠️"], erg: "154", isolation: "25m", tactics: "腐蝕性。強烈刺激臭。水稀釋。", ppe: "消防衣/B級" },
+    { un: "2924", nameTW: "易燃液體腐蝕性", nameEN: "Flammable liq, corr", cas: "N/A", class: "3", nfpa: { h: "3", f: "3", r: "0", s: "" }, ghs: ["🔥,☢️"], erg: "132", isolation: "50m", tactics: "複合危害。抗溶性泡沫優先。", ppe: "B級/消防衣" },
+    { un: "3394", nameTW: "烷基鋰 (自燃禁水)", nameEN: "Pyrophoric liquid", cas: "N/A", class: "4.2", nfpa: { h: "3", f: "4", r: "3", s: "W" }, ghs: ["🔥,☢️"], erg: "135", isolation: "150m", tactics: "觸空即燃。遇水即炸。嚴禁水。", ppe: "消防衣/防禦" },
+    { un: "6000", nameTW: "磷化鋁", nameEN: "Aluminum phosphide", cas: "20859-73-8", class: "4.3", nfpa: { h: "4", f: "4", r: "2", s: "W" }, ghs: ["☠️,🔥"], erg: "139", isolation: "100m", tactics: "禁水。遇水生劇毒磷化氫。", ppe: "A級氣密衣" },
+    { un: "1038", nameTW: "液烯 (液化乙烯)", nameEN: "Ethylene, liquid", cas: "74-85-1", class: "2.1", nfpa: { h: "3", f: "4", r: "2", s: "" }, ghs: ["🔥"], erg: "115", isolation: "100m", tactics: "易燃低溫。受熱聚合。", ppe: "消防衣+SCBA" },
+    { un: "1080", nameTW: "六氟化硫 (SF6)", nameEN: "Sulfur hexafluoride", cas: "2551-62-4", class: "2.2", nfpa: { h: "1", f: "0", r: "0", s: "" }, ghs: ["N/A"], erg: "126", isolation: "25m", tactics: "窒息性。高壓絕緣用。", ppe: "消防衣+SCBA" },
+    { un: "1744", nameTW: "溴", nameEN: "Bromine", cas: "7726-95-6", class: "8", nfpa: { h: "4", f: "0", r: "0", s: "OX" }, ghs: ["☠️,☢️,⭕"], erg: "154", isolation: "50m", tactics: "強腐蝕氧化。極劇毒。", ppe: "A級氣密衣" },
+    { un: "1053", nameTW: "硫化氫", nameEN: "Hydrogen sulfide", cas: "7783-06-4", class: "2.3", nfpa: { h: "4", f: "4", r: "0", s: "" }, ghs: ["☠️,🔥"], erg: "117", isolation: "100m", tactics: "臭蛋味。劇毒易燃。神經毒。", ppe: "A級氣密衣" },
+    { un: "2029", nameTW: "聯胺 (無水)", nameEN: "Hydrazine, anhydrous", cas: "302-01-2", class: "3", nfpa: { h: "4", f: "3", r: "2", s: "" }, ghs: ["🔥,☠️,☢️"], erg: "132", isolation: "100m", tactics: "劇毒易燃。強還原劑。A級防護。", ppe: "A級氣密衣" },
+    { un: "1016", nameTW: "一氧化碳", nameEN: "Carbon monoxide", cas: "630-08-0", class: "2.3", nfpa: { h: "3", f: "4", r: "0", s: "" }, ghs: ["🔥,☠️"], erg: "119", isolation: "100m", tactics: "無味劇毒。易燃爆炸。SCBA必備。", ppe: "消防衣+SCBA" },
+    { un: "1067", nameTW: "四氧化二氮", nameEN: "Nitrogen dioxide", cas: "10102-44-0", class: "2.3", nfpa: { h: "3", f: "0", r: "0", s: "OX" }, ghs: ["☠️,☢️,⭕"], erg: "124", isolation: "100m", tactics: "強氧化。紅棕色煙霧。肺水腫。", ppe: "A級氣密衣" },
+    { un: "1008", nameTW: "三氟化硼", nameEN: "Boron trifluoride", cas: "7637-07-2", class: "2.3", nfpa: { h: "4", f: "0", r: "1", s: "" }, ghs: ["☠️,☢️"], erg: "125", isolation: "100m", tactics: "劇毒。強烈腐蝕煙霧。水霧吸收。", ppe: "A級氣密衣" },
+    { un: "1133", nameTW: "膠水 (易燃)", nameEN: "Adhesives", cas: "N/A", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥"], erg: "128", isolation: "25m", tactics: "視溶劑種類。多為一般泡沫。", ppe: "消防衣+SCBA" },
+    { un: "1026", nameTW: "氰 (氣體)", nameEN: "Cyanogen", cas: "460-19-5", class: "2.3", nfpa: { h: "4", f: "4", r: "2", s: "" }, ghs: ["🔥,☠️"], erg: "119", isolation: "100m", tactics: "極毒易燃。類似氰化物效應。", ppe: "A級氣密衣" },
+    { un: "1604", nameTW: "乙二胺", nameEN: "Ethylenediamine", cas: "107-15-3", class: "8", nfpa: { h: "3", f: "2", r: "0", s: "" }, ghs: ["🔥,☢️,⚠️"], erg: "132", isolation: "50m", tactics: "腐蝕性。易燃。抗溶性泡沫。", ppe: "B級/消防衣" },
+    { un: "1689", nameTW: "氰化鈉", nameEN: "Sodium cyanide", cas: "143-33-9", class: "6.1", nfpa: { h: "3", f: "0", r: "0", s: "" }, ghs: ["☠️"], erg: "157", isolation: "25m", tactics: "劇毒。嚴禁混酸(生劇毒氣體)。", ppe: "B級/A級" },
+    { un: "1802", nameTW: "高氯酸", nameEN: "Perchloric acid", cas: "7601-90-3", class: "8", nfpa: { h: "3", f: "0", r: "3", s: "OX" }, ghs: ["🔥,☢️,⭕"], erg: "140", isolation: "50m", tactics: "強氧化劑。受熱撞擊爆炸。大量水。", ppe: "B級/A級" },
+    { un: "1829", nameTW: "三氧化硫", nameEN: "Sulfur trioxide", cas: "7446-11-9", class: "8", nfpa: { h: "3", f: "0", r: "2", s: "W" }, ghs: ["☢️"], erg: "137", isolation: "50m", tactics: "遇水劇烈反應生硫酸霧。禁射水。", ppe: "A級氣密衣" },
+    { un: "2015", nameTW: "高濃度雙氧水", nameEN: "Hydrogen peroxide, stab.", cas: "7722-84-1", class: "5.1", nfpa: { h: "3", f: "0", r: "3", s: "OX" }, ghs: ["🔥,☢️,⭕"], erg: "143", isolation: "50m", tactics: "極強氧化。分解爆炸。大量水。", ppe: "B級/A級" },
+    { un: "2211", nameTW: "聚苯乙烯珠", nameEN: "Polymeric beads", cas: "N/A", class: "9", nfpa: { h: "1", f: "2", r: "0", s: "" }, ghs: ["⚠️"], erg: "133", isolation: "25m", tactics: "釋放易燃蒸氣(戊烷)。注意通風。", ppe: "消防衣+SCBA" },
+    { un: "2448", nameTW: "硫磺 (熔融態)", nameEN: "Sulfur, molten", cas: "7704-34-9", class: "4.1", nfpa: { h: "2", f: "1", r: "0", s: "" }, ghs: ["⚠️"], erg: "133", isolation: "25m", tactics: "高溫。生二氧化硫毒煙。水霧。", ppe: "消防衣+SCBA" },
+    { un: "2810", nameTW: "毒性液體 (未指明)", nameEN: "Toxic liquid, nos", cas: "N/A", class: "6.1", nfpa: { h: "3", f: "0", r: "0", s: "" }, ghs: ["☠️"], erg: "153", isolation: "50m", tactics: "化災處理程序。嚴防接觸吸入。", ppe: "B級/A級" },
+    { un: "3082", nameTW: "危害環境液體", nameEN: "Env. hazardous liq.", cas: "N/A", class: "9", nfpa: { h: "1", f: "1", r: "0", s: "" }, ghs: ["🐟"], erg: "171", isolation: "25m", tactics: "防流入水體。攔阻收集。", ppe: "消防衣+SCBA" },
+    { un: "3105", nameTW: "有機過氧化物D型", nameEN: "Organic peroxide D", cas: "N/A", class: "5.2", nfpa: { h: "2", f: "3", r: "2", s: "" }, ghs: ["🔥,⚠️"], erg: "145", isolation: "50m", tactics: "熱敏感。分解爆炸。噴水冷卻。", ppe: "消防衣+SCBA" },
+    { un: "3399", nameTW: "有機金屬禁水液體", nameEN: "Organometallic liq.", cas: "N/A", class: "4.3", nfpa: { h: "3", f: "4", r: "2", s: "W" }, ghs: ["🔥,☢️"], erg: "138", isolation: "100m", tactics: "遇水劇烈反應生易燃氣。禁水。", ppe: "消防衣+SCBA" },
+    { un: "1165", nameTW: "二氧六烷", nameEN: "Dioxane", cas: "123-91-1", class: "3", nfpa: { h: "2", f: "3", r: "1", s: "" }, ghs: ["🔥,⚠️"], erg: "127", isolation: "50m", tactics: "易生過氧化物爆炸。抗溶性泡沫。", ppe: "消防衣+SCBA" },
+    { un: "1104", nameTW: "乙酸戊酯", nameEN: "Amyl acetates", cas: "628-63-7", class: "3", nfpa: { h: "1", f: "3", r: "0", s: "" }, ghs: ["🔥"], erg: "129", isolation: "50m", tactics: "香蕉油。一般泡沫。易燃。", ppe: "消防衣+SCBA" },
+    { un: "1992", nameTW: "易燃液體毒性", nameEN: "Flammable liq, toxic", cas: "N/A", class: "3", nfpa: { h: "3", f: "3", r: "0", s: "" }, ghs: ["🔥,☠️"], erg: "131", isolation: "100m", tactics: "複合危害。需同時防燃與防毒。", ppe: "B級/消防衣" }
+];
+
+        const inputEl = document.getElementById('search-input');
+        const resultsEl = document.getElementById('search-results');
+        const detailEl = document.getElementById('detail-view');
+
+        function handleSearch() {
+            const query = inputEl.value.trim().toLowerCase();
+            resultsEl.innerHTML = '';
+            if (query.length < 1) {
+                resultsEl.style.display = 'none';
+                return;
+            }
+            const matches = db.filter(item => 
+                item.un.includes(query) || 
+                item.nameTW.includes(query) || 
+                item.nameEN.toLowerCase().includes(query) ||
+                (item.cas && item.cas.includes(query))
+            );
+            if (matches.length > 0) {
+                resultsEl.style.display = 'block';
+                matches.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.innerHTML = `<span class="badge-un">UN ${item.un}</span> ${item.nameTW}`;
+                    div.onclick = () => showDetail(item);
+                    resultsEl.appendChild(div);
+                });
+            } else {
+                resultsEl.style.display = 'block';
+                resultsEl.innerHTML = `<div class="result-item" style="color:#aaa;">查無相符結果</div>`;
+            }
+        }
+
+        function showDetail(item) {
+            inputEl.value = item.nameTW;
+            resultsEl.style.display = 'none';
+            detailEl.style.display = 'block';
+            document.querySelector('.class-ref-container').style.display = 'none';
+
+            document.getElementById('d-name').innerText = `[UN ${item.un}] ${item.nameTW}`;
+            document.getElementById('d-cas').innerText = item.cas || "N/A";
+            document.getElementById('d-class').innerText = `Class ${item.class}`;
+
+            document.getElementById('nfpa-h').innerText = item.nfpa.h;
+            document.getElementById('nfpa-f').innerText = item.nfpa.f;
+            document.getElementById('nfpa-r').innerText = item.nfpa.r;
+            document.getElementById('nfpa-s').innerHTML = item.nfpa.s || "-";
+
+            const ghsBox = document.getElementById('d-ghs');
+            ghsBox.innerHTML = '';
+            // 優化：處理包含逗號的 GHS 字串，切割成獨立 Badge
+            const ghsArray = item.ghs[0].split(',');
+            ghsArray.forEach(g => {
+                if(g.trim()){
+                    ghsBox.innerHTML += `<span class="ghs-badge">${g.trim()}</span>`;
+                }
+            });
+
+            document.getElementById('d-guide').innerText = item.erg;
+            document.getElementById('d-iso').innerText = item.isolation;
+            document.getElementById('d-tactics').innerText = item.tactics;
+            document.getElementById('d-ppe').innerText = item.ppe;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetSearch() {
+            inputEl.value = '';
+            resultsEl.style.display = 'none';
+            detailEl.style.display = 'none';
+            document.querySelector('.class-ref-container').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
