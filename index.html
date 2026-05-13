@@ -658,6 +658,46 @@
                 <h4 style="color:#4caf50;">🚒 緊急應變</h4><p><b>處置：</b>一般火災撲滅方式。首要任務為【攔阻消防廢水】流入下水道或河川。</p>
             `
         };
+        // ==========================================
+        // 確保這兩段函數緊接在 ergData = { ... }; 的下方
+        // ==========================================
+
+        // 打開 ERG 視窗的函數
+        function showErgGuide(guideNum) {
+            if (!guideNum) return;
+            // 自動過濾掉後面可能帶有的英文字母 (例如 116P 變成 116)
+            const baseGuide = guideNum.replace(/[^0-9]/g, '');
+            
+            const titleEl = document.getElementById('erg-title');
+            const bodyEl = document.getElementById('erg-body');
+            const modalEl = document.getElementById('erg-modal');
+
+            // 防呆：如果找不到彈窗的 HTML，會跳出警告
+            if (!modalEl) {
+                alert('系統錯誤：找不到彈出視窗的 HTML 結構，請確認步驟二是否有正確貼上。');
+                return;
+            }
+
+            titleEl.innerText = `ERG 指南 ${baseGuide}`;
+            
+            // 讀取對應的中文指南內容
+            if (ergData[baseGuide]) {
+                bodyEl.innerHTML = ergData[baseGuide];
+            } else {
+                bodyEl.innerHTML = `<p style="color:#aaa; text-align:center; margin-top:20px;">尚待匯入 Guide ${baseGuide} 的中文詳細內容。</p>`;
+            }
+
+            // 顯示彈出視窗
+            modalEl.classList.add('show');
+        }
+
+        // 關閉 ERG 視窗的函數
+        function closeErgModal() {
+            const modalEl = document.getElementById('erg-modal');
+            if (modalEl) {
+                modalEl.classList.remove('show');
+            }
+        }
     </script>
 <!-- 🌟 ERG 彈出視窗 -->
     <div id="erg-modal" class="modal-overlay">
