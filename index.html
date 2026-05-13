@@ -210,47 +210,44 @@
             </div>
 
             <!-- Tab 1: 完美呈現的 UN 分類菱形牌 -->
-            <div id="un-tab" class="ref-content active">
-                <div class="class-ref-grid">
-                    <div class="class-item">
-                        <div class="un-diamond un-c1"><div class="un-content"><div class="un-sym">💥</div><div class="un-num">1</div></div></div>
-                        <span>第 1 類<br>爆炸物</span>
-                    </div>
-                    <div class="class-item">
-                        <div class="un-diamond un-c2"><div class="un-content"><div class="un-sym">💨</div><div class="un-num">2</div></div></div>
-                        <span>第 2 類<br>氣體</span>
-                    </div>
-                    <div class="class-item">
-                        <div class="un-diamond un-c3"><div class="un-content"><div class="un-sym">🔥</div><div class="un-num">3</div></div></div>
-                        <span style="color:#f44336;">第 3 類<br>易燃液體</span>
-                    </div>
-                    <div class="class-item">
-                        <div class="un-diamond un-c4"><div class="un-content"><div class="un-sym">🔥</div><div class="un-num">4</div></div></div>
-                        <span style="color:#ff9800;">第 4 類<br>易燃固體</span>
-                    </div>
-                    <div class="class-item">
-                        <div class="un-diamond un-c5"><div class="un-content"><div class="un-sym">⭕</div><div class="un-num">5</div></div></div>
-                        <span style="color:#ffeb3b;">第 5 類<br>氧化物質</span>
-                    </div>
-                    <div class="class-item">
-                        <div class="un-diamond un-c6"><div class="un-content"><div class="un-sym">☠️</div><div class="un-num">6</div></div></div>
-                        <span>第 6 類<br>毒性/感染</span>
-                    </div>
-                    <div class="class-item">
-                        <div class="un-diamond un-c7"><div class="un-content"><div class="un-sym">☢️</div><div class="un-num">7</div></div></div>
-                        <span style="color:#ffeb3b;">第 7 類<br>放射性</span>
-                    </div>
-                    <div class="class-item">
-                        <div class="un-diamond un-c8"><div class="un-content"><div class="un-sym">🧪</div><div class="un-num">8</div></div></div>
-                        <span>第 8 類<br>腐蝕性</span>
-                    </div>
-                    <div class="class-item">
-                        <div class="un-diamond un-c9"><div class="un-content"><div class="un-sym">⚠️</div><div class="un-num">9</div></div></div>
-                        <span>第 9 類<br>其他危害</span>
-                    </div>
-                </div>
-            </div>
-
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px;">
+    <div class="class-card" onclick="setQueryByClass('1')">
+        <img src="img/class_1.svg" alt="Class 1">
+        <div class="class-card-text">第 1 類<br>爆炸物</div>
+    </div>
+    <div class="class-card" onclick="setQueryByClass('2')">
+        <img src="img/class_2.svg" alt="Class 2">
+        <div class="class-card-text">第 2 類<br>氣體</div>
+    </div>
+    <div class="class-card" onclick="setQueryByClass('3')">
+        <img src="img/class_3.svg" alt="Class 3">
+        <div class="class-card-text">第 3 類<br>易燃液體</div>
+    </div>
+    <div class="class-card" onclick="setQueryByClass('4')">
+        <img src="img/class_4.svg" alt="Class 4">
+        <div class="class-card-text">第 4 類<br>易燃固體</div>
+    </div>
+    <div class="class-card" onclick="setQueryByClass('5')">
+        <img src="img/class_5.svg" alt="Class 5">
+        <div class="class-card-text">第 5 類<br>氧化物質</div>
+    </div>
+    <div class="class-card" onclick="setQueryByClass('6')">
+        <img src="img/class_6.svg" alt="Class 6">
+        <div class="class-card-text">第 6 類<br>毒性/感染</div>
+    </div>
+    <div class="class-card" onclick="setQueryByClass('7')">
+        <img src="img/class_7.svg" alt="Class 7">
+        <div class="class-card-text">第 7 類<br>放射性</div>
+    </div>
+    <div class="class-card" onclick="setQueryByClass('8')">
+        <img src="img/class_8.svg" alt="Class 8">
+        <div class="class-card-text">第 8 類<br>腐蝕性</div>
+    </div>
+    <div class="class-card" onclick="setQueryByClass('9')">
+        <img src="img/class_9.svg" alt="Class 9">
+        <div class="class-card-text">第 9 類<br>其他危害</div>
+    </div>
+</div>
             <!-- Tab 2: 台灣六類公共危險物品 -->
             <div id="tw-tab" class="ref-content">
                 <div style="display:flex; flex-direction:column; gap:8px;">
