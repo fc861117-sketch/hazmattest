@@ -336,7 +336,6 @@
                 <div class="nfpa-quad" id="nfpa-r" style="background:#ffeb3b; bottom:0; left:0; border:1px solid #fff;"></div>
                 <div class="nfpa-quad" id="nfpa-s" style="background:#fff; bottom:0; right:0; border:1px solid #fff;"></div>
             </div>
-            <div style="font-size:0.8rem; color:#aaa;">紅:易燃 | 藍:健康<br>黃:反應 | 白:特殊</div>
         </div>
         <div class="data-row"><div class="data-label">GHS 危害標示</div><div id="d-ghs"></div></div>
         <div class="data-row"><div class="data-label">ERG 指南 | 初期隔離</div><div class="data-value">Guide <span id="d-guide"></span> | <span id="d-iso" style="color:var(--danger);"></span></div></div>
@@ -403,40 +402,26 @@
             // 1. 恢復乾淨的基本資訊
             document.getElementById('d-name').innerText = `[UN ${item.un}] ${item.nameTW}`;
             document.getElementById('d-cas').innerText = item.cas || "N/A";
-            document.getElementById('d-class').innerText = `Class ${item.class}`;
             
-            // 2. 隱藏舊的十字形 NFPA 數字欄位
+            // 將原本那行純文字的 Class 隱藏，避免跟儀表板的圖示重複
+            const classSpan = document.getElementById('d-class');
+            if (classSpan) classSpan.innerText = ""; 
+
+            // 2. 隱藏舊的十字形 NFPA 數字欄位 (確保原本的數字不會露出來)
             ['nfpa-f', 'nfpa-h', 'nfpa-r', 'nfpa-s'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el && el.parentElement) el.parentElement.style.display = 'none';
             });
 
-            // 🌟 3. 【終極離線版】純 CSS 運輸標示產生器 (無網路也能顯示，不破圖)
-            function getCSSPlacard(c) {
-                let bg = '#fff', icon = '', num = c.charAt(0), color = '#000', iconTopColor = '#000';
-                if (c.startsWith('2.1')) { bg = '#F44336'; icon = '🔥'; color = '#fff'; iconTopColor = '#fff'; }
-                else if (c.startsWith('2.2')) { bg = '#4CAF50'; icon = '💨'; color = '#fff'; iconTopColor = '#fff'; }
-                else if (c.startsWith('2.3')) { bg = '#fff'; icon = '☠️'; color = '#000'; iconTopColor = '#000'; }
-                else if (c.startsWith('3')) { bg = '#F44336'; icon = '🔥'; color = '#fff'; iconTopColor = '#fff'; }
-                else if (c.startsWith('4.1')) { bg = 'repeating-linear-gradient(-45deg, #F44336, #F44336 6px, #fff 6px, #fff 12px)'; icon = '🔥'; color = '#000'; iconTopColor = '#000'; num = '4'; }
-                else if (c.startsWith('4.2')) { bg = 'linear-gradient(135deg, #fff 50%, #F44336 50%)'; icon = '🔥'; color = '#fff'; iconTopColor = '#000'; num = '4'; }
-                else if (c.startsWith('4.3')) { bg = '#2196F3'; icon = '🔥'; color = '#fff'; iconTopColor = '#fff'; num = '4'; }
-                else if (c.startsWith('5')) { bg = '#FFEB3B'; icon = '⭕'; color = '#000'; iconTopColor = '#000'; }
-                else if (c.startsWith('6')) { bg = '#fff'; icon = '☠️'; color = '#000'; iconTopColor = '#000'; }
-                else if (c.startsWith('7')) { bg = 'linear-gradient(135deg, #FFEB3B 50%, #fff 50%)'; icon = '☢️'; color = '#000'; iconTopColor = '#000'; }
-                else if (c.startsWith('8')) { bg = 'linear-gradient(135deg, #fff 50%, #000 50%)'; icon = '🧪'; color = '#fff'; iconTopColor = '#000'; }
-                else if (c.startsWith('9')) { bg = 'linear-gradient(135deg, transparent 50%, #fff 50%), repeating-linear-gradient(-45deg, #000, #000 6px, #fff 6px, #fff 12px)'; icon = '⚠️'; color = '#000'; iconTopColor = '#fff'; }
-                
-                return `
-                <div style="position:relative; width:52px; height:52px; transform:rotate(45deg); background:${bg}; border:2px solid #fff; box-shadow:0 0 0 1px #555, 3px 3px 6px rgba(0,0,0,0.5); border-radius:3px; flex-shrink:0;">
-                    <div style="position:absolute; top:-7px; left:-7px; width:100%; height:100%; display:flex; justify-content:center; align-items:flex-start; transform:rotate(-45deg); font-size:1.3rem; color:${iconTopColor};">${icon}</div>
-                    <div style="position:absolute; bottom:-7px; right:-7px; width:100%; height:100%; display:flex; justify-content:center; align-items:flex-end; transform:rotate(-45deg); font-size:1.1rem; font-weight:900; color:${color};">${num}</div>
-                </div>
-                `;
-            }
+            // 🌟 3. 真實圖片資料庫讀取 (直接指向您 GitHub 的 img 資料夾)
+            const cStr = String(item.class);
+            // 這裡會去抓例如 img/class_2.1.png
+            const imgSrc = `img/class_${cStr}.png`; 
+            // 防呆機制：如果找不到細項(例如2.1)，會自動退一步去抓主類別(例如 img/class_2.png)
+            const fallbackSrc = `img/class_${cStr.charAt(0)}.png`;
+            const imgHtml = `<img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" style="width:70px; height:70px; filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.7));" alt="Class ${cStr}">`;
 
             // 🌟 4. 建立左右並排的視覺儀表板
-            const classSpan = document.getElementById('d-class');
             if (classSpan && classSpan.parentElement) {
                 let visBox = document.getElementById('hcfd-visual-dashboard');
                 if (!visBox) {
@@ -447,10 +432,14 @@
                 
                 visBox.innerHTML = `
                     <div style="display:flex; flex-wrap:wrap; justify-content:space-around; align-items:center; background:#1e1e1e; padding:15px; margin:15px 0; border-radius:8px; border:1px solid #444; box-shadow:0 4px 8px rgba(0,0,0,0.5);">
-                        <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
-                            ${getCSSPlacard(item.class)}
+                        
+                        <!-- 左半部：真實運輸圖片 -->
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                            ${imgHtml}
                             <span style="font-size:1rem; font-weight:bold; color:#ff9800; background:#111; padding:3px 8px; border-radius:4px; box-shadow:inset 0 0 3px rgba(255,152,0,0.3);">Class ${item.class}</span>
                         </div>
+
+                        <!-- 右半部：完美 45度角 NFPA 704 -->
                         <div style="display:flex; align-items:center; gap:20px;">
                             <div style="position:relative; width:60px; height:60px; transform:rotate(45deg); box-shadow: 2px 2px 6px rgba(0,0,0,0.6); flex-shrink:0;">
                                 <div style="position:absolute; top:0; left:0; width:30px; height:30px; background:#F44336; color:white; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.1rem; border:1px solid #111;"><span style="transform:rotate(-45deg);">${item.nfpa.f}</span></div>
@@ -458,16 +447,18 @@
                                 <div style="position:absolute; top:0; left:30px; width:30px; height:30px; background:#FFEB3B; color:black; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.1rem; border:1px solid #111;"><span style="transform:rotate(-45deg);">${item.nfpa.r}</span></div>
                                 <div style="position:absolute; top:30px; left:30px; width:30px; height:30px; background:#FFFFFF; color:black; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.85rem; border:1px solid #111;"><span style="transform:rotate(-45deg);">${item.nfpa.s || ''}</span></div>
                             </div>
-                          <div style="font-size: 0.8rem; line-height: 1.4; color: #aaa;">
-                                <span style="color: #F44336;">紅:易燃</span> | <span style="color: #2196F3;">藍:健康</span><br>
-                                <span style="color: #FFEB3B;">黃:反應</span> | <span style="color: #fff;">白:特殊</span>
-                          </div>
+                            
+                            <!-- 這裡是唯一留下的新註解 -->
+                            <div style="display:flex; flex-direction:column; gap:6px; font-size:0.95rem; font-weight:bold; color:#ccc;">
+                                <div><span style="color:#F44336;">紅:易燃</span> | <span style="color:#2196F3;">藍:健康</span></div>
+                                <div><span style="color:#FFEB3B;">黃:反應</span> | <span style="color:#fff;">白:特殊</span></div>
+                            </div>
                         </div>
                     </div>
                 `;
             }
 
-            // 5. GHS 危害標示
+            // 5. GHS 危害標示 (含放射性自動校正)
             const ghsMap = { "🔥": "易燃物", "⭕": "氧化性", "💣": "爆炸物", "💥": "爆炸物", "💨": "加壓氣體", "🧪": "腐蝕性", "☢️": "放射性", "☠️": "急毒性", "⚠️": "警告/刺激", "👤": "健康危害", "🐟": "環境危害" };
             const ghsBox = document.getElementById('d-ghs');
             if (ghsBox) {
