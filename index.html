@@ -394,34 +394,30 @@
             }
         }
 
-        function showDetail(item) {
+function showDetail(item) {
             // 切換畫面
             detailEl.style.display = 'block';
             document.getElementById('main-card').style.display = 'none';
             
-            // 1. 恢復乾淨的基本資訊
+            // 🌟 1. 恢復乾淨的基本資訊 (把 Class 補回來，讓「類別:」後面不會空白！)
             document.getElementById('d-name').innerText = `[UN ${item.un}] ${item.nameTW}`;
             document.getElementById('d-cas').innerText = item.cas || "N/A";
+            document.getElementById('d-class').innerText = `Class ${item.class}`; 
             
-            // 將原本那行純文字的 Class 隱藏，避免跟儀表板的圖示重複
-            const classSpan = document.getElementById('d-class');
-            if (classSpan) classSpan.innerText = ""; 
-
-            // 2. 隱藏舊的十字形 NFPA 數字欄位 (確保原本的數字不會露出來)
+            // 2. 隱藏舊的十字形 NFPA 數字欄位
             ['nfpa-f', 'nfpa-h', 'nfpa-r', 'nfpa-s'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el && el.parentElement) el.parentElement.style.display = 'none';
             });
 
-            // 🌟 3. 真實圖片資料庫讀取 (直接指向您 GitHub 的 img 資料夾)
+            // 🌟 3. 真實 SVG 圖片資料庫讀取
             const cStr = String(item.class);
-            // 這裡會去抓例如 img/class_2.1.svg
             const imgSrc = `img/class_${cStr}.svg`; 
-            // 防呆機制：如果找不到細項(例如2.1)，會自動退一步去抓主類別(例如 img/class_2.svg)
             const fallbackSrc = `img/class_${cStr.charAt(0)}.svg`;
             const imgHtml = `<img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" style="width:70px; height:70px; filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.7));" alt="Class ${cStr}">`;
 
             // 🌟 4. 建立左右並排的視覺儀表板
+            const classSpan = document.getElementById('d-class');
             if (classSpan && classSpan.parentElement) {
                 let visBox = document.getElementById('hcfd-visual-dashboard');
                 if (!visBox) {
@@ -433,13 +429,11 @@
                 visBox.innerHTML = `
                     <div style="display:flex; flex-wrap:wrap; justify-content:space-around; align-items:center; background:#1e1e1e; padding:15px; margin:15px 0; border-radius:8px; border:1px solid #444; box-shadow:0 4px 8px rgba(0,0,0,0.5);">
                         
-                        <!-- 左半部：真實運輸圖片 -->
                         <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
                             ${imgHtml}
                             <span style="font-size:1rem; font-weight:bold; color:#ff9800; background:#111; padding:3px 8px; border-radius:4px; box-shadow:inset 0 0 3px rgba(255,152,0,0.3);">Class ${item.class}</span>
                         </div>
 
-                        <!-- 右半部：完美 45度角 NFPA 704 -->
                         <div style="display:flex; align-items:center; gap:20px;">
                             <div style="position:relative; width:60px; height:60px; transform:rotate(45deg); box-shadow: 2px 2px 6px rgba(0,0,0,0.6); flex-shrink:0;">
                                 <div style="position:absolute; top:0; left:0; width:30px; height:30px; background:#F44336; color:white; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.1rem; border:1px solid #111;"><span style="transform:rotate(-45deg);">${item.nfpa.f}</span></div>
@@ -448,7 +442,6 @@
                                 <div style="position:absolute; top:30px; left:30px; width:30px; height:30px; background:#FFFFFF; color:black; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.85rem; border:1px solid #111;"><span style="transform:rotate(-45deg);">${item.nfpa.s || ''}</span></div>
                             </div>
                             
-                            <!-- 這裡是唯一留下的新註解 -->
                             <div style="display:flex; flex-direction:column; gap:6px; font-size:0.95rem; font-weight:bold; color:#ccc;">
                                 <div><span style="color:#F44336;">紅:易燃</span> | <span style="color:#2196F3;">藍:健康</span></div>
                                 <div><span style="color:#FFEB3B;">黃:反應</span> | <span style="color:#fff;">白:特殊</span></div>
@@ -458,14 +451,19 @@
                 `;
             }
 
-            // 5. GHS 危害標示 (含放射性自動校正)
-            const ghsMap = { "🔥": "易燃物", "⭕": "氧化性", "💣": "爆炸物", "💥": "爆炸物", "💨": "加壓氣體", "🧪": "腐蝕性", "☢️": "放射性", "☠️": "急毒性", "⚠️": "警告/刺激", "👤": "健康危害", "🐟": "環境危害" };
+            // 5. GHS 危害標示 (附帶放射性自動校正機制)
+            const ghsMap = {
+                "🔥": "易燃物", "⭕": "氧化性", "💣": "爆炸物", "💥": "爆炸物", 
+                "💨": "加壓氣體", "🧪": "腐蝕性", "☢️": "放射性", "☠️": "急毒性", 
+                "⚠️": "警告/刺激", "👤": "健康危害", "🐟": "環境危害"
+            };
+
             const ghsBox = document.getElementById('d-ghs');
             if (ghsBox) {
                 ghsBox.innerHTML = '';
                 item.ghs[0].split(',').forEach(g => {
                     let icon = g.trim();
-                    if (icon === "☢️" && item.class !== "7") icon = "🧪";
+                    if (icon === "☢️" && item.class !== "7") icon = "🧪"; // 校正防呆
                     if(icon) {
                         const text = ghsMap[icon] || "";
                         ghsBox.innerHTML += `<span class="ghs-badge">${icon} ${text}</span>`;
@@ -473,13 +471,13 @@
                 });
             }
 
-            // 6. ERG 彈窗與其他資訊
+            // 6. 其他戰術資訊與 ERG 動態點擊
             const dGuide = document.getElementById('d-guide');
             if (dGuide) dGuide.innerHTML = `<span class="guide-link" onclick="showErgGuide('${item.erg}')">${item.erg} 👆</span>`;
+            
             if(document.getElementById('d-iso')) document.getElementById('d-iso').innerText = item.isolation;
             if(document.getElementById('d-tactics')) document.getElementById('d-tactics').innerText = item.tactics;
             if(document.getElementById('d-ppe')) document.getElementById('d-ppe').innerText = item.ppe;
-            
             window.scrollTo(0,0);
         }
         
