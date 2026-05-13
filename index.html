@@ -182,77 +182,10 @@
             color: var(--accent-color); text-decoration: underline;
             cursor: pointer; font-weight: bold; padding: 2px 5px;
         }
-        /* 🌟 NFPA 704 完美 45 度真實菱形與顏色排版 */
-        .nfpa-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            background: #222;
-            padding: 15px 20px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            margin: 15px 0;
-        }
-        .nfpa-diamond {
-            position: relative;
-            width: 64px; 
-            height: 64px;
-            transform: rotate(45deg); /* 將正方形旋轉45度變成菱形 */
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.8);
-            flex-shrink: 0;
-        }
-        .nfpa-quad {
-            position: absolute;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 900;
-            font-size: 1.2rem;
-            box-sizing: border-box;
-            border: 1px solid #111;
-        }
-        .nfpa-quad span {
-            transform: rotate(-45deg); /* 把裡面的數字轉正 */
-            display: block;
-        }
-        /* 定位四個象限與顏色 (藍左、紅上、白下、黃右) */
-        .nfpa-blue { top: 0; left: 0; background: #2196F3; color: white; }
-        .nfpa-red { top: 0; left: 32px; background: #F44336; color: white; }
-        .nfpa-white { top: 32px; left: 0; background: #FFFFFF; color: black; }
-        .nfpa-yellow { top: 32px; left: 32px; background: #FFEB3B; color: black; }
-        
-        /* 說明文字排版 */
-        .nfpa-text-desc {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            font-size: 1.05rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-        
-        /* 運輸標示排版 */
-        .class-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 10px 0;
-            padding: 10px;
-            background: #1a1a1a;
-            border-left: 5px solid var(--accent-color);
-            border-radius: 4px;
-        }
-        .class-wrapper img {
-            width: 70px;
-            height: 70px;
-            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.6));
-        }
     </style>
 </head>
 <body>
-    
+
     <div class="page-watermark"></div>
     
     <!-- 置頂列 -->
@@ -419,32 +352,6 @@
         const resultsEl = document.getElementById('search-results');
         const detailEl = document.getElementById('detail-view');
         const refSection = document.getElementById('reference-section');
-        // 🌟 真實 UN 運輸標示圖庫 (Wikimedia 向量標準圖)
-        const placardUrls = {
-            "2.1": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Hazmat_Class_2-1.svg",
-            "2.2": "https://upload.wikimedia.org/wikipedia/commons/5/58/Hazmat_Class_2-2.svg",
-            "2.3": "https://upload.wikimedia.org/wikipedia/commons/8/87/Hazmat_Class_2-3.svg",
-            "3": "https://upload.wikimedia.org/wikipedia/commons/2/23/Hazmat_Class_3.svg",
-            "4.1": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Hazmat_Class_4-1.svg",
-            "4.2": "https://upload.wikimedia.org/wikipedia/commons/0/01/Hazmat_Class_4-2.svg",
-            "4.3": "https://upload.wikimedia.org/wikipedia/commons/5/52/Hazmat_Class_4-3.svg",
-            "5.1": "https://upload.wikimedia.org/wikipedia/commons/0/01/Hazmat_Class_5-1.svg",
-            "5.2": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Hazmat_Class_5-2.svg",
-            "6.1": "https://upload.wikimedia.org/wikipedia/commons/3/36/Hazmat_Class_6.svg",
-            "6.2": "https://upload.wikimedia.org/wikipedia/commons/3/36/Hazmat_Class_6.svg",
-            "7": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Hazmat_Class_7.svg",
-            "8": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Hazmat_Class_8.svg",
-            "9": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Hazmat_Class_9.svg"
-        };
-
-        // 讀取圖片的函數 (若找不到細項如2.1，會自動降級找2，再找不到會顯示純文字防呆)
-        function getPlacardHTML(classNum) {
-            const url = placardUrls[classNum] || placardUrls[classNum.charAt(0)];
-            if(url) {
-                return `<img src="${url}" alt="Class ${classNum}" onerror="this.style.display='none'">`;
-            }
-            return ``; // 若無圖片則不顯示
-        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -494,44 +401,15 @@
             
             document.getElementById('d-name').innerText = `[UN ${item.un}] ${item.nameTW}`;
             document.getElementById('d-cas').innerText = item.cas || "N/A";
-// 🌟 1. 渲染真實照片版：運輸標示 (結合圖片與文字)
-            const classHtml = `
-                <div class="class-wrapper">
-                    ${getPlacardHTML(item.class)}
-                    <span style="font-size: 1.2rem; font-weight: bold;">第 ${item.class} 類公共危險物</span>
-                </div>
-            `;
-            // 這裡假設您的 HTML 裡面有一個放分類的容器，例如 id="d-class-container"
-            // 如果原本是寫文字，可以直接用 innerHTML 覆蓋上去
-            document.getElementById('d-class').innerHTML = classHtml;
-
-
-            // 🌟 2. 渲染完美 45度角 NFPA 菱形與色彩文字
-            const nfpaHtml = `
-                <div class="nfpa-wrapper">
-                    <!-- 菱形圖形區 -->
-                    <div class="nfpa-diamond">
-                        <div class="nfpa-quad nfpa-blue"><span>${item.nfpa.h}</span></div>
-                        <div class="nfpa-quad nfpa-red"><span>${item.nfpa.f}</span></div>
-                        <div class="nfpa-quad nfpa-white"><span style="font-size:0.9rem;">${item.nfpa.s || ''}</span></div>
-                        <div class="nfpa-quad nfpa-yellow"><span>${item.nfpa.r}</span></div>
-                    </div>
-                    
-                    <!-- 色彩文字備註區 -->
-                    <div class="nfpa-text-desc">
-                        <div style="color: #64B5F6;">健康危害：${item.nfpa.h}</div>
-                        <div style="color: #E57373;">火災危害：${item.nfpa.f}</div>
-                        <div style="color: #FFF176;">反應活性：${item.nfpa.r}</div>
-                        <div style="color: #FFFFFF; text-shadow: 1px 1px 2px #000;">特殊危害：${item.nfpa.s || '無'}</div>
-                    </div>
-                </div>
-            `;
-            // 這裡假設您的 HTML 裡面有一個放 NFPA 的容器，例如 id="d-nfpa"
-            document.getElementById('d-nfpa').innerHTML = nfpaHtml;
+            document.getElementById('d-class').innerText = `Class ${item.class}`;
+            document.getElementById('nfpa-f').innerText = item.nfpa.f;
+            document.getElementById('nfpa-h').innerText = item.nfpa.h;
+            document.getElementById('nfpa-r').innerText = item.nfpa.r;
+            document.getElementById('nfpa-s').innerText = item.nfpa.s || "-";
 
             const ghsMap = {
                 "🔥": "易燃物", "⭕": "氧化性", "💣": "爆炸物", "💥": "爆炸物", 
-                "💨": "加壓氣體", "🧪": "腐蝕性", "☢️": "腐蝕性", "☠️": "急毒性", 
+                "💨": "加壓氣體", "☢️": "放射性", "🧪": "腐蝕性", "☠️": "急毒性", 
                 "⚠️": "警告/刺激", "👤": "健康危害", "🐟": "環境危害"
             };
 
