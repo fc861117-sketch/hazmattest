@@ -389,9 +389,12 @@
             document.getElementById(tabId).classList.add('active');
         }
         
-        function handleSearch() {
+function handleSearch() {
             const query = inputEl.value.trim().toLowerCase();
             resultsEl.innerHTML = '';
+            
+            // 只要開始打字搜尋，就立刻隱藏下方的詳細資料卡片
+            detailEl.style.display = 'none'; 
             
             if (query.length < 1) { 
                 resultsEl.style.display = 'none'; 
@@ -401,14 +404,47 @@
             
             refSection.style.display = 'none';
             
-            // 🌟 修正點：將中文欄位與 CAS 號碼在比對時也強制轉為小寫
-            const matches = db.filter(item => 
+            // 1. 初步過濾符合條件的項目 (包含 UN、中英文名、CAS)
+            let matches = db.filter(item => 
                 item.un.includes(query) || 
                 item.nameTW.toLowerCase().includes(query) || 
                 item.nameEN.toLowerCase().includes(query) || 
                 (item.cas && item.cas.toLowerCase().includes(query))
             );
 
+            // 🌟 2. 自動去重機制：防止 database.js 裡面有重複複製的物質
+            const uniqueMatches = [];
+            const seenUNs = new Set();
+            for (const item of matches) {
+                if (!seenUNs.has(item.un)) {
+                    seenUNs.add(item.un);
+                    uniqueMatches.push(item);
+                }
+            }
+            matches = uniqueMatches;
+
+            // 🌟 3. 智慧權重排序 (優先級：UN完全符合 > UN開頭符合 > 名稱符合 > CAS符合)
+            matches.sort((a, b) => {
+                // 權重 1: UN 完全一模一樣 (例如打 1203 就是要找 1203)
+                const aUnExact = a.un === query ? 1 : 0;
+                const bUnExact = b.un === query ? 1 : 0;
+                if (aUnExact !== bUnExact) return bUnExact - aUnExact;
+
+                // 權重 2: UN 前幾碼符合 (例如打 12 會優先顯示 1202, 1203)
+                const aUnStart = a.un.startsWith(query) ? 1 : 0;
+                const bUnStart = b.un.startsWith(query) ? 1 : 0;
+                if (aUnStart !== bUnStart) return bUnStart - aUnStart;
+
+                // 權重 3: 中文名稱包含關鍵字
+                const aNameMatch = a.nameTW.toLowerCase().includes(query) ? 1 : 0;
+                const bNameMatch = b.nameTW.toLowerCase().includes(query) ? 1 : 0;
+                if (aNameMatch !== bNameMatch) return bNameMatch - aNameMatch;
+
+                // 若以上都相同，則維持原本順序 (通常這時候就是 CAS 號碼符合的，會被排到最下面)
+                return 0;
+            });
+
+            // 4. 顯示結果
             if (matches.length > 0) {
                 resultsEl.style.display = 'block';
                 matches.forEach(item => {
@@ -423,13 +459,13 @@
                 resultsEl.innerHTML = `<div style="padding:12px; color:#aaa; text-align:center;">查無相符結果</div>`;
             }
         }
-
-        function showDetail(item) {
+function showDetail(item) {
             // 切換畫面
             detailEl.style.display = 'block';
-            document.getElementById('main-card').style.display = 'none';
+            document.getElementById('search-results').style.display = 'none';
+            document.getElementById('reference-section').style.display = 'none';
             
-            // 🌟 1. 恢復乾淨的基本資訊 (把 Class 補回來，讓「類別:」後面不會空白！)
+            // 1. 恢復乾淨的基本資訊
             document.getElementById('d-name').innerText = `[UN ${item.un}] ${item.nameTW}`;
             document.getElementById('d-cas').innerText = item.cas || "N/A";
             document.getElementById('d-class').innerText = `Class ${item.class}`; 
@@ -440,14 +476,31 @@
                 if(el && el.parentElement) el.parentElement.style.display = 'none';
             });
 
-            // 🌟 3. 真實 SVG 圖片資料庫讀取
+            // 🌟 3. 特殊符號自動翻譯機 (新增功能！)
+            let sRaw = (item.nfpa.s || '').toUpperCase();
+            let sMeanings = [];
+            // 自動偵測資料庫裡填寫的字串，轉換為中文
+            if (sRaw.includes('W')) sMeanings.push('禁水');
+            if (sRaw.includes('OX')) sMeanings.push('氧化');
+            if (sRaw.includes('SA')) sMeanings.push('窒息');
+            if (sRaw.includes('ACID')) sMeanings.push('酸性');
+            if (sRaw.includes('ALK')) sMeanings.push('鹼性');
+            if (sRaw.includes('COR')) sMeanings.push('腐蝕');
+            if (sRaw.includes('CRY')) sMeanings.push('低溫');
+            if (sRaw.includes('RAD') || sRaw.includes('☢️')) sMeanings.push('放射性');
+
+            // 如果有偵測到特殊符號，就組合成橘色的註解字串
+            let sMeaningText = sMeanings.length > 0 
+                ? `<span style="color:#ff9800; font-size:0.85rem; margin-left:4px;">(${sMeanings.join('/')})</span>` 
+                : '';
+
+            // 4. 真實 SVG 圖片資料庫讀取
             const cStr = String(item.class);
             const imgSrc = `img/class_${cStr}.svg`; 
             const fallbackSrc = `img/class_${cStr.charAt(0)}.svg`;
-           // 🌟 將讀取出來的 SVG 圖片直接加上實心白底與菱形遮罩
             const imgHtml = `<img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" style="width:70px; height:70px; background-color: #FFFFFF; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.8));" alt="Class ${cStr}">`;
 
-            // 🌟 4. 建立左右並排的視覺儀表板
+            // 5. 建立左右並排的視覺儀表板
             const classSpan = document.getElementById('d-class');
             if (classSpan && classSpan.parentElement) {
                 let visBox = document.getElementById('hcfd-visual-dashboard');
@@ -473,16 +526,17 @@
                                 <div style="position:absolute; top:30px; left:30px; width:30px; height:30px; background:#FFFFFF; color:black; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.85rem; border:1px solid #111;"><span style="transform:rotate(-45deg);">${item.nfpa.s || ''}</span></div>
                             </div>
                             
+                            <!-- 🌟 在這裡將翻譯結果動態加入 -->
                             <div style="display:flex; flex-direction:column; gap:6px; font-size:0.95rem; font-weight:bold; color:#ccc;">
                                 <div><span style="color:#F44336;">紅:易燃</span> | <span style="color:#2196F3;">藍:健康</span></div>
-                                <div><span style="color:#FFEB3B;">黃:反應</span> | <span style="color:#fff;">白:特殊</span></div>
+                                <div><span style="color:#FFEB3B;">黃:反應</span> | <span style="color:#fff;">白:特殊</span> ${sMeaningText}</div>
                             </div>
                         </div>
                     </div>
                 `;
             }
 
-            // 5. GHS 危害標示 (附帶放射性自動校正機制)
+            // 6. GHS 危害標示 (附帶放射性自動校正機制)
             const ghsMap = {
                 "🔥": "易燃物", "⭕": "氧化性", "💣": "爆炸物", "💥": "爆炸物", 
                 "💨": "加壓氣體", "🧪": "腐蝕性", "☢️": "放射性", "☠️": "急毒性", 
@@ -502,7 +556,7 @@
                 });
             }
 
-            // 6. 其他戰術資訊與 ERG 動態點擊
+            // 7. 其他戰術資訊與 ERG 動態點擊
             const dGuide = document.getElementById('d-guide');
             if (dGuide) dGuide.innerHTML = `<span class="guide-link" onclick="showErgGuide('${item.erg}')">${item.erg} 👆</span>`;
             
