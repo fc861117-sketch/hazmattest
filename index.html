@@ -26,6 +26,15 @@
             background-repeat: repeat;
         }
 
+         /* 網頁專屬背景浮水印 (滿版排列小字體) */
+        .page-watermark { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 9999; pointer-events: none; user-select: none;
+            /* 利用 SVG 繪製浮水印並設定為重複背景 */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='150'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' transform='rotate(-30, 110, 75)' fill='rgba(255, 255, 255, 0.04)' font-size='18' font-weight='900' font-family='sans-serif'%3Epowered by 單柏洋%3C/text%3E%3C/svg%3E");
+            background-repeat: repeat;
+        }
+
         /* 置頂列 */
         .top-bar {
             position: sticky; top: 0;
@@ -177,6 +186,7 @@
 </head>
 <body>
 
+    <div class="page-watermark"></div>
     <!-- 置頂列 -->
     <div class="top-bar">
         <h1>HCFD // 危害辨識 (ISO)</h1>
