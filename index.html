@@ -492,46 +492,73 @@
             }
         }
 
-        function showDetail(item) {
+function showDetail(item) {
             detailEl.style.display = 'block';
             document.getElementById('main-card').style.display = 'none';
             
             document.getElementById('d-name').innerText = `[UN ${item.un}] ${item.nameTW}`;
             document.getElementById('d-cas').innerText = item.cas || "N/A";
-// 🌟 1. 渲染真實照片版：運輸標示
+            
+            // ====================================================================
+            // 🌟 圖形化替換區塊：將真實運輸標示與 45度角 NFPA 統整塞入 d-class
+            // ====================================================================
             document.getElementById('d-class').innerHTML = `
+                <!-- 1. 運輸標示真實照片 -->
                 <div class="class-wrapper">
                     ${getPlacardHTML(item.class)}
-                    <span style="font-size: 1.2rem; font-weight: bold;">第 ${item.class} 類</span>
+                    <span style="font-size: 1.2rem; font-weight: bold;">第 ${item.class} 類公共危險物</span>
                 </div>
-            `;
-
-            // 🌟 2. 渲染完美 45度角 NFPA 菱形與色彩文字
-            document.getElementById('d-nfpa').innerHTML = `
+                
+                <!-- 2. NFPA 45度角真實菱形與色彩文字 -->
                 <div class="nfpa-wrapper">
-                    <!-- 菱形圖形區 -->
                     <div class="nfpa-diamond">
                         <div class="nfpa-quad nfpa-blue"><span>${item.nfpa.h}</span></div>
                         <div class="nfpa-quad nfpa-red"><span>${item.nfpa.f}</span></div>
-                        <div class="nfpa-quad nfpa-white"><span style="font-size:0.9rem;">${item.nfpa.s || ''}</span></div>
+                        <div class="nfpa-quad nfpa-white"><span style="font-size:0.9rem; font-weight:bold;">${item.nfpa.s || ''}</span></div>
                         <div class="nfpa-quad nfpa-yellow"><span>${item.nfpa.r}</span></div>
                     </div>
-                    
-                    <!-- 色彩文字備註區 -->
                     <div class="nfpa-text-desc">
                         <div style="color: #64B5F6;">健康危害：${item.nfpa.h}</div>
                         <div style="color: #E57373;">火災危害：${item.nfpa.f}</div>
                         <div style="color: #FFF176;">反應活性：${item.nfpa.r}</div>
-                        <div style="color: #FFFFFF; text-shadow: 1px 1px 2px #000;">特殊危害：${item.nfpa.s || '無'}</div>
+                        <div style="color: #FFFFFF; text-shadow: 1px 1px 2px #000;">特殊危害：${item.nfpa.s || '-'}</div>
                     </div>
                 </div>
             `;
-            
+
+            // 🌟 隱藏舊的純文字欄位：自動找到原本裝這 4 個數字的父節點並隱藏，避免版面重複
+            ['nfpa-f', 'nfpa-h', 'nfpa-r', 'nfpa-s'].forEach(id => {
+                const el = document.getElementById(id);
+                // 如果找到該元素，連同它的外層(例如 <tr> 或 <div>)一起隱藏
+                if(el && el.parentElement) {
+                    el.parentElement.style.display = 'none';
+                }
+            });
+            // ====================================================================
+
             const ghsMap = {
                 "🔥": "易燃物", "⭕": "氧化性", "💣": "爆炸物", "💥": "爆炸物", 
-                "💨": "加壓氣體", "🧪": "腐蝕性", "☢️": "腐蝕性", "☠️": "急毒性", 
+                "💨": "加壓氣體", "🧪": "腐蝕性", "☢️": "放射性", "☠️": "急毒性", 
                 "⚠️": "警告/刺激", "👤": "健康危害", "🐟": "環境危害"
             };
+
+            const ghsBox = document.getElementById('d-ghs');
+            ghsBox.innerHTML = '';
+            item.ghs[0].split(',').forEach(g => {
+                const icon = g.trim();
+                if(icon) {
+                    const text = ghsMap[icon] || "";
+                    ghsBox.innerHTML += `<span class="ghs-badge">${icon} ${text}</span>`;
+                }
+            });
+
+            // 🌟 將純文字替換為可點擊的連結標籤
+            document.getElementById('d-guide').innerHTML = `<span class="guide-link" onclick="showErgGuide('${item.erg}')">${item.erg} 👆</span>`;
+            document.getElementById('d-iso').innerText = item.isolation;
+            document.getElementById('d-tactics').innerText = item.tactics;
+            document.getElementById('d-ppe').innerText = item.ppe;
+            window.scrollTo(0,0);
+        }
 
             const ghsBox = document.getElementById('d-ghs');
             ghsBox.innerHTML = '';
