@@ -464,7 +464,9 @@ function showDetail(item) {
             detailEl.style.display = 'block';
             document.getElementById('search-results').style.display = 'none';
             document.getElementById('reference-section').style.display = 'none';
-            
+
+            // 點選物質後，立刻清空搜尋欄，方便下次直接輸入！
+            document.getElementById('search-input').value = '';
             // 1. 恢復乾淨的基本資訊
             document.getElementById('d-name').innerText = `[UN ${item.un}] ${item.nameTW}`;
             document.getElementById('d-cas').innerText = item.cas || "N/A";
