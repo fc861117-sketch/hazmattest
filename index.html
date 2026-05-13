@@ -329,18 +329,7 @@
         <div class="data-row"><div class="data-label">滅火與禁忌注意事項</div><div class="data-value" id="d-tactics"></div></div>
         <div class="data-row"><div class="data-label">PPE 裝備要求</div><div class="data-value" id="d-ppe"></div></div>
     </div>
-<!-- 🌟 ERG 彈出視窗 -->
-    <div id="erg-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="erg-title">指南 ???</h3>
-                <button class="close-btn" onclick="closeErgModal()">關閉</button>
-            </div>
-            <div class="modal-body" id="erg-body">
-                <!-- ERG 內容會被動態塞入這裡 -->
-            </div>
-        </div>
-    </div>
+
     <!-- 引用外部資料庫檔案 -->
     <script src="database.js?v=3"></script>
 
@@ -670,5 +659,17 @@
             `
         };
     </script>
+<!-- 🌟 ERG 彈出視窗 -->
+    <div id="erg-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="erg-title">指南 ???</h3>
+                <button class="close-btn" onclick="closeErgModal()">關閉</button>
+            </div>
+            <div class="modal-body" id="erg-body">
+                <!-- ERG 內容會被動態塞入這裡 -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>
