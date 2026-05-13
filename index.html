@@ -441,7 +441,8 @@
             const cStr = String(item.class);
             const imgSrc = `img/class_${cStr}.svg`; 
             const fallbackSrc = `img/class_${cStr.charAt(0)}.svg`;
-            const imgHtml = `<img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" style="width:70px; height:70px; filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.7));" alt="Class ${cStr}">`;
+           // 🌟 將讀取出來的 SVG 圖片直接加上實心白底與菱形遮罩
+            const imgHtml = `<img src="${imgSrc}" onerror="this.onerror=null; this.src='${fallbackSrc}';" style="width:70px; height:70px; background-color: #FFFFFF; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.8));" alt="Class ${cStr}">`;
 
             // 🌟 4. 建立左右並排的視覺儀表板
             const classSpan = document.getElementById('d-class');
