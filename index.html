@@ -395,19 +395,21 @@
             }
         }
 
-        function showDetail(item) {
+function showDetail(item) {
             detailEl.style.display = 'block';
             document.getElementById('main-card').style.display = 'none';
             
+            // 1. 保留您原本的文字資訊 (確保原本的網頁架構不會報錯)
             document.getElementById('d-name').innerText = `[UN ${item.un}] ${item.nameTW}`;
             document.getElementById('d-cas').innerText = item.cas || "N/A";
             document.getElementById('d-class').innerText = `Class ${item.class}`;
-            document.getElementById('nfpa-f').innerText = item.nfpa.f;
-            document.getElementById('nfpa-h').innerText = item.nfpa.h;
-            document.getElementById('nfpa-r').innerText = item.nfpa.r;
-            document.getElementById('nfpa-s').innerText = item.nfpa.s || "-";
+            
+            if(document.getElementById('nfpa-f')) document.getElementById('nfpa-f').innerText = item.nfpa.f;
+            if(document.getElementById('nfpa-h')) document.getElementById('nfpa-h').innerText = item.nfpa.h;
+            if(document.getElementById('nfpa-r')) document.getElementById('nfpa-r').innerText = item.nfpa.r;
+            if(document.getElementById('nfpa-s')) document.getElementById('nfpa-s').innerText = item.nfpa.s || "-";
 
-           // 🌟 1. 修正字典：將 ☢️ 正確對應為「放射性」，🧪 才是「腐蝕性」
+            // 2. GHS 危害標示 (加入自動校正：放射性轉腐蝕性)
             const ghsMap = {
                 "🔥": "易燃物", "⭕": "氧化性", "💣": "爆炸物", "💥": "爆炸物", 
                 "💨": "加壓氣體", "🧪": "腐蝕性", "☢️": "放射性", "☠️": "急毒性", 
@@ -415,29 +417,91 @@
             };
 
             const ghsBox = document.getElementById('d-ghs');
-            ghsBox.innerHTML = '';
-            item.ghs[0].split(',').forEach(g => {
-                let icon = g.trim();
-                
-                // 🌟 2. 自動校正防呆：如果抓到 ☢️ 符號，但這項物質不是第 7 類 (放射性物質)，就一律自動轉回 🧪 試管！
-                if (icon === "☢️" && item.class !== "7") {
-                    icon = "🧪";
-                }
+            if (ghsBox) {
+                ghsBox.innerHTML = '';
+                item.ghs[0].split(',').forEach(g => {
+                    let icon = g.trim();
+                    // 🌟 自動校正防呆：如果不是第7類，就強制把放射性 ☢️ 變回 腐蝕性 🧪
+                    if (icon === "☢️" && item.class !== "7") {
+                        icon = "🧪";
+                    }
+                    if(icon) {
+                        const text = ghsMap[icon] || "";
+                        ghsBox.innerHTML += `<span class="ghs-badge">${icon} ${text}</span>`;
+                    }
+                });
+            }
 
-                if(icon) {
-                    const text = ghsMap[icon] || "";
-                    ghsBox.innerHTML += `<span class="ghs-badge">${icon} ${text}</span>`;
-                }
-            });
-
-            // 🌟 將純文字替換為可點擊的連結標籤
-            document.getElementById('d-guide').innerHTML = `<span class="guide-link" onclick="showErgGuide('${item.erg}')">${item.erg} 👆</span>`;
-            document.getElementById('d-iso').innerText = item.isolation;
-            document.getElementById('d-tactics').innerText = item.tactics;
-            document.getElementById('d-ppe').innerText = item.ppe;
+            // 3. 其他戰術資訊與 ERG 點擊
+            const dGuide = document.getElementById('d-guide');
+            if(dGuide) dGuide.innerHTML = `<span class="guide-link" onclick="showErgGuide('${item.erg}')">${item.erg} 👆</span>`;
+            if(document.getElementById('d-iso')) document.getElementById('d-iso').innerText = item.isolation;
+            if(document.getElementById('d-tactics')) document.getElementById('d-tactics').innerText = item.tactics;
+            if(document.getElementById('d-ppe')) document.getElementById('d-ppe').innerText = item.ppe;
             window.scrollTo(0,0);
-        }
 
+            // ====================================================================
+            // 🌟 4. 新增視覺化儀表板：真實運輸圖示 & 完美 45 度角 NFPA
+            // ====================================================================
+            const placardUrls = {
+                "2.1": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Hazmat_Class_2-1.svg",
+                "2.2": "https://upload.wikimedia.org/wikipedia/commons/5/58/Hazmat_Class_2-2.svg",
+                "2.3": "https://upload.wikimedia.org/wikipedia/commons/8/87/Hazmat_Class_2-3.svg",
+                "3": "https://upload.wikimedia.org/wikipedia/commons/2/23/Hazmat_Class_3.svg",
+                "4.1": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Hazmat_Class_4-1.svg",
+                "4.2": "https://upload.wikimedia.org/wikipedia/commons/0/01/Hazmat_Class_4-2.svg",
+                "4.3": "https://upload.wikimedia.org/wikipedia/commons/5/52/Hazmat_Class_4-3.svg",
+                "5.1": "https://upload.wikimedia.org/wikipedia/commons/0/01/Hazmat_Class_5-1.svg",
+                "5.2": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Hazmat_Class_5-2.svg",
+                "6.1": "https://upload.wikimedia.org/wikipedia/commons/3/36/Hazmat_Class_6.svg",
+                "6.2": "https://upload.wikimedia.org/wikipedia/commons/3/36/Hazmat_Class_6.svg",
+                "7": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Hazmat_Class_7.svg",
+                "8": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Hazmat_Class_8.svg",
+                "9": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Hazmat_Class_9.svg"
+            };
+            const cStr = String(item.class);
+            const pUrl = placardUrls[cStr] || placardUrls[cStr.charAt(0)] || '';
+            const imgHtml = pUrl ? `<img src="${pUrl}" style="width:75px; height:75px; filter: drop-shadow(2px 3px 5px rgba(0,0,0,0.6));">` : '';
+
+            // 安全地建立一個獨立的視覺區塊，不蓋掉您原本的畫面
+            let visBox = document.getElementById('hcfd-visual-box');
+            if (!visBox) {
+                visBox = document.createElement('div');
+                visBox.id = 'hcfd-visual-box';
+                // 找到 GHS 區塊，把新圖表插在它上面
+                const targetEl = document.getElementById('d-ghs');
+                if (targetEl && targetEl.parentElement) {
+                    targetEl.parentElement.parentNode.insertBefore(visBox, targetEl.parentElement);
+                } else {
+                    detailEl.appendChild(visBox); // 防呆備案
+                }
+            }
+
+            // 寫入一體成型的 HTML 與 CSS，絕對不會受外部干擾
+            visBox.innerHTML = `
+                <!-- 運輸標示 -->
+                <div style="display:flex; align-items:center; gap:15px; margin: 15px 0; padding:10px 15px; background:#1a1a1a; border-left:5px solid #03a9f4; border-radius:6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                    ${imgHtml}
+                    <span style="font-size: 1.2rem; font-weight: bold; color: #fff;">第 ${item.class} 類公共危險物</span>
+                </div>
+                
+                <!-- 完美 45 度角 NFPA 704 -->
+                <div style="display:flex; align-items:center; gap:35px; background:#222; padding:20px; border-radius:8px; border:1px solid #444; margin:15px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                    <div style="position:relative; width:64px; height:64px; transform:rotate(45deg); flex-shrink:0; box-shadow: 2px 2px 8px rgba(0,0,0,0.8);">
+                        <div style="position:absolute; top:0; left:0; width:32px; height:32px; background:#2196F3; color:white; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem; border:1px solid #111;"><span style="transform:rotate(-45deg); display:block;">${item.nfpa.h}</span></div>
+                        <div style="position:absolute; top:0; left:32px; width:32px; height:32px; background:#F44336; color:white; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem; border:1px solid #111;"><span style="transform:rotate(-45deg); display:block;">${item.nfpa.f}</span></div>
+                        <div style="position:absolute; top:32px; left:0; width:32px; height:32px; background:#FFFFFF; color:black; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:0.9rem; border:1px solid #111;"><span style="transform:rotate(-45deg); display:block;">${item.nfpa.s||''}</span></div>
+                        <div style="position:absolute; top:32px; left:32px; width:32px; height:32px; background:#FFEB3B; color:black; display:flex; justify-content:center; align-items:center; font-weight:900; font-size:1.2rem; border:1px solid #111;"><span style="transform:rotate(-45deg); display:block;">${item.nfpa.r}</span></div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:1.05rem; font-weight:bold; letter-spacing:1px;">
+                        <div style="color: #64B5F6;">藍色(健康)：${item.nfpa.h}</div>
+                        <div style="color: #E57373;">紅色(火災)：${item.nfpa.f}</div>
+                        <div style="color: #FFF176;">黃色(反應)：${item.nfpa.r}</div>
+                        <div style="color: #FFFFFF;">白色(特殊)：${item.nfpa.s || '無'}</div>
+                    </div>
+                </div>
+            `;
+        }
         function resetSearch() {
             inputEl.value = '';
             detailEl.style.display = 'none';
