@@ -667,35 +667,34 @@ function showDetail(item) {
                         console.error('MathJax 渲染失敗: ', err.message);
                     });
                 }
-            } else {
-                rowReaction.style.display = 'none';  // 沒資料就隱藏
-            }
-
-            window.scrollTo(0,0);
+} else {
+            rowReaction.style.display = 'none';  // 沒資料就隱藏
         }
-        // ... 在函式末端加入以下程式碼 ...
-const sdsBox = document.getElementById('d-sds-links');
-if (sdsBox) {
-    sdsBox.innerHTML = ''; // 先清空舊連結
-    if (item.cas && item.cas !== "N/A") {
-        const cleanCas = item.cas.trim();
-        
-        // 1. PubChem (美國國家衛生研究院 - 資料最全)
-        const pubChemUrl = `https://pubchem.ncbi.nlm.nih.gov/#query=${cleanCas}`;
-        sdsBox.innerHTML += `<a href="${pubChemUrl}" target="_blank" class="sds-link-btn">PubChem</a>`;
-        
-        // 2. CAMEO Chemicals (NOAA - 救災應變專用)
-        const cameoUrl = `https://cameochemicals.noaa.gov/search/simple?search_type=cas&search_text=${cleanCas}`;
-        sdsBox.innerHTML += `<a href="${cameoUrl}" target="_blank" class="sds-link-btn" style="background:#2e7d32;">CAMEO</a>`;
 
-        // 3. ICSC 國際化學品安全卡 (中文版搜尋)
-        // 註：ICSC 的 URL 結構較複雜，建議導向搜尋頁或使用 Google 特定搜尋
-        const googleSds = `https://www.google.com/search?q=site:ilo.org+ICSC+${cleanCas}`;
-        sdsBox.innerHTML += `<a href="${googleSds}" target="_blank" class="sds-link-btn" style="background:#1565c0;">ICSC 檢索</a>`;
-    } else {
-        sdsBox.innerHTML = '<span style="color:#666; font-size:0.9rem;">此物質無 CAS 資訊，無法提供外部連結。</span>';
-    }
-}
+        // 👇 將 SDS 按鈕生成的程式碼，貼在這個位置 👇
+        const sdsBox = document.getElementById('d-sds-links');
+        if (sdsBox) {
+            sdsBox.innerHTML = ''; // 先清空舊連結
+            if (item.cas && item.cas !== "N/A") {
+                const cleanCas = item.cas.trim();
+                
+                // 1. PubChem
+                const pubChemUrl = `https://pubchem.ncbi.nlm.nih.gov/#query=${cleanCas}`;
+                sdsBox.innerHTML += `<a href="${pubChemUrl}" target="_blank" class="sds-link-btn">PubChem</a>`;
+                
+                // 2. CAMEO Chemicals
+                const cameoUrl = `https://cameochemicals.noaa.gov/search/simple?search_type=cas&search_text=${cleanCas}`;
+                sdsBox.innerHTML += `<a href="${cameoUrl}" target="_blank" class="sds-link-btn" style="background:#2e7d32;">CAMEO</a>`;
+
+                // 3. ICSC
+                const googleSds = `https://www.google.com/search?q=site:ilo.org+ICSC+${cleanCas}`;
+                sdsBox.innerHTML += `<a href="${googleSds}" target="_blank" class="sds-link-btn" style="background:#1565c0;">ICSC 檢索</a>`;
+            } else {
+                sdsBox.innerHTML = '<span style="color:#666; font-size:0.9rem;">此物質無 CAS 資訊，無法提供外部連結。</span>';
+            }
+        }
+        window.scrollTo(0,0);
+} 
         
         function resetSearch() {
             inputEl.value = '';
