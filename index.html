@@ -696,8 +696,10 @@ function showDetail(item) {
                 const merckUrl = `https://www.sigmaaldrich.com/TW/zh/search/${cleanCas}?focus=products&term=${cleanCas}&type=product`;
                 sdsBox.innerHTML += `<a href="${merckUrl}" target="_blank" class="sds-link-btn" style="background:#00838f;">Merck 台灣</a>`;
 
-                // 5. 台北榮總毒物中心 (臨床急救參考)
-                const vghUrl = `https://www.google.com/search?q=site:vghtpe.gov.tw+"${cleanCas}"`;
+                // 5. 台北榮總毒物中心 (臨床急救參考 - 使用新網域 pcc-vghtpe.tw)
+                // 使用 encodeURIComponent 處理 CAS，並鎖定新版毒物中心網域
+                const vghQuery = encodeURIComponent(`site:pcc-vghtpe.tw "${cleanCas}"`);
+                const vghUrl = `https://www.google.com/search?q=${vghQuery}`;
                 sdsBox.innerHTML += `<a href="${vghUrl}" target="_blank" class="sds-link-btn" style="background:#2e7d32;">北榮毒物中心</a>`;
            
             } else {
