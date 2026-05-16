@@ -685,14 +685,13 @@ function showDetail(item) {
                 const googleSds = `https://www.google.com/search?q=site:ilo.org+ICSC+${cleanCas}`;
                 sdsBox.innerHTML += `<a href="${googleSds}" target="_blank" class="sds-link-btn" style="background:#1565c0;">ICSC 檢索(英文)</a>`;
 
-                // 4. 台灣繁體中文 SDS (優化搜尋精準度)
-                // 嘗試抓取物質的中文名稱（假設你的資料庫欄位叫做 nameTW，若不同請自行更改）
-                const chemName = item.nameTW || item.name || ''; 
+                // 4. 台灣繁體中文 SDS (終極優化版：名稱為主，CAS為輔)
+                const chemName = item.nameTW || ''; 
+                const enName = item.name || '';
+                // 組合邏輯：強迫包含 "安全資料表" 以及 "中文名稱"。
+                // 同時容許網頁中出現 CAS "或" 英文名稱，這樣能大幅提高命中原廠 SDS 的機率
+                const twSdsKeyword = `"${chemName}" ("${cleanCas}" OR "${enName}") "安全資料表" site:tw`;
 
-                // 組合更強大的搜尋條件：強迫包含 CAS、中文名稱(若有)，並鎖定 "安全資料表" 這個精確字眼
-                const twSdsKeyword = `"${cleanCas}" ${chemName ? `"${chemName}"` : ''} "安全資料表" site:tw`;
-
-                // 轉換為安全的 URL 格式
                 const twQuery = encodeURIComponent(twSdsKeyword);
                 const twSdsUrl = `https://www.google.com/search?q=${twQuery}`;
 
