@@ -680,15 +680,24 @@ function showDetail(item) {
     // 🌟 新增：判斷並顯示「化學署列管毒化物」按鈕
             const rowTcs = document.getElementById('row-tcs');
             const btnTcs = document.getElementById('btn-tcs');
-            // 只要資料庫有設定 isTCS: true，就顯示按鈕
+// 只要資料庫有設定 isTCS: true，就顯示按鈕
             if (item.isTCS === true) {
                 rowTcs.style.display = 'block';
-                // 設定點擊按鈕後，開新分頁連往環境部化學雲/ERIC，並自動帶入 CAS 號碼搜尋
+                
+                // 🌟 修正點：連線至最新環境部系統，並加入「自動複製 CAS 碼」的戰術外掛
                 btnTcs.onclick = () => {
                     const searchQuery = item.cas ? item.cas : item.nameTW;
-                    // 使用環境部化學物質查詢網址 (利用 CAS 號碼精準搜尋)
-                    const targetUrl = `https://chem.moenv.gov.tw/home/search?kw=${searchQuery}`;
-                    window.open(targetUrl, '_blank');
+                    
+                    // 1. 自動將 CAS 號碼複製到剪貼簿 (讓幕僚可以直接貼上)
+                    navigator.clipboard.writeText(searchQuery).then(() => {
+                        alert(`✅ 已自動複製 CAS 號碼：${searchQuery}\n\n即將前往環境部查詢系統，請直接在欄位「貼上」即可快速查詢！`);
+                        
+                        // 2. 開啟最新版的環境部「列管毒性及關注化學物質查詢」官方入口
+                        window.open('https://flora2.moenv.gov.tw/ToxicC/Query/database.aspx', '_blank');
+                    }).catch(err => {
+                        // 防呆機制：如果舊版瀏覽器不支援自動複製，還是會幫忙打開網頁
+                        window.open('https://flora2.moenv.gov.tw/ToxicC/Query/database.aspx', '_blank');
+                    });
                 };
             } else {
                 rowTcs.style.display = 'none'; // 非列管物質則隱藏
@@ -727,19 +736,6 @@ function showDetail(item) {
                 // 加上 &term= 可以跳過手動輸入，直接讓網站執行搜尋
                 const merckUrl = `https://www.sigmaaldrich.com/TW/zh/search/${cleanCas}?focus=products&term=${cleanCas}&type=product`;
                 sdsBox.innerHTML += `<a href="${merckUrl}" target="_blank" class="sds-link-btn" style="background:#00838f;">Merck 台灣</a>`;
-
-                // 5. 環境部化學署 (突破動態表單：點擊自動複製 CAS 並開啟查詢頁)
-                const chaUrl = 'https://www.cha.gov.tw/sp-toch-list-1.html';
-
-                // 綁定 onclick 事件，利用 navigator.clipboard.writeText 寫入剪貼簿
-                sdsBox.innerHTML += `
-                    <a href="${chaUrl}" 
-                       target="_blank" 
-                       onclick="navigator.clipboard.writeText('${cleanCas}'); alert('已自動複製 CAS 碼：${cleanCas}\\n\\n請在開啟的化學署網頁中，直接【貼上】查詢。');" 
-                       class="sds-link-btn" 
-                       style="background:#558b2f; border-color:#dcedc8;">
-                       🇹🇼 毒化物查詢 (自動複製CAS)
-                    </a>`;
          
             } else {
                 sdsBox.innerHTML = '<span style="color:#666; font-size:0.9rem;">此物質無 CAS 資訊，無法提供外部連結。</span>';
