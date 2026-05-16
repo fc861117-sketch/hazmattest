@@ -677,26 +677,28 @@ function showDetail(item) {
 } else {
             rowReaction.style.display = 'none';  // 沒資料就隱藏
         }
-    // 🌟 新增：判斷並顯示「化學署列管毒化物」按鈕
+            // 🌟 新增：判斷並顯示「化學署列管毒化物」按鈕
             const rowTcs = document.getElementById('row-tcs');
             const btnTcs = document.getElementById('btn-tcs');
-// 只要資料庫有設定 isTCS: true，就顯示按鈕
+
+            // 只要資料庫有設定 isTCS: true，就顯示按鈕
             if (item.isTCS === true) {
                 rowTcs.style.display = 'block';
                 
-                // 🌟 修正點：連線至最新環境部系統，並加入「自動複製 CAS 碼」的戰術外掛
+                // 🌟 修正點：精準連線至指定的「環境部化學署」最新頁面
                 btnTcs.onclick = () => {
-                    const searchQuery = item.cas ? item.cas : item.nameTW;
+                    // 優先使用 CAS 號碼，如果沒有才用中文名
+                    const searchQuery = item.cas && item.cas !== "N/A" ? item.cas : item.nameTW;
                     
-                    // 1. 自動將 CAS 號碼複製到剪貼簿 (讓幕僚可以直接貼上)
+                    // 1. 自動將 CAS 號碼複製到剪貼簿
                     navigator.clipboard.writeText(searchQuery).then(() => {
-                        alert(`✅ 已自動複製 CAS 號碼：${searchQuery}\n\n即將前往環境部查詢系統，請直接在欄位「貼上」即可快速查詢！`);
+                        alert(`✅ 已自動複製：${searchQuery}\n\n即將前往化學署網站，請直接在「CAS No.」或「關鍵字」欄位長按「貼上」即可快速查詢！`);
                         
-                        // 2. 開啟最新版的環境部「列管毒性及關注化學物質查詢」官方入口
-                        window.open('https://flora2.moenv.gov.tw/ToxicC/Query/database.aspx', '_blank');
+                        // 2. 開啟您指定的最新化學署官方網址
+                        window.open('https://www.cha.gov.tw/sp-toch-list-1.html', '_blank');
                     }).catch(err => {
-                        // 防呆機制：如果舊版瀏覽器不支援自動複製，還是會幫忙打開網頁
-                        window.open('https://flora2.moenv.gov.tw/ToxicC/Query/database.aspx', '_blank');
+                        // 防呆機制：如果不支援自動複製，依然正常打開網頁
+                        window.open('https://www.cha.gov.tw/sp-toch-list-1.html', '_blank');
                     });
                 };
             } else {
