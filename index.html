@@ -704,14 +704,13 @@ function showDetail(item) {
                 const merckUrl = `https://www.sigmaaldrich.com/TW/zh/search/${cleanCas}?focus=products&term=${cleanCas}&type=product`;
                 sdsBox.innerHTML += `<a href="${merckUrl}" target="_blank" class="sds-link-btn" style="background:#00838f;">Merck 台灣</a>`;
 
-                // 5. 環境部化學署 (精準鎖定毒化物資料庫，排除新聞與事故)
-                // inurl:toch 強制只搜尋網址內包含 toch 的頁面 (即 sp-toch-list 等資料庫頁面)
-                // -事故 -案例 強制排除任何包含事故報告的網頁
+                // 5. 環境部化學署 (毒性及關注化學物質列管確認)
                 const chaKeyword = `"${cleanCas}" inurl:toch -事故 -案例 site:cha.gov.tw`;
                 const chaQuery = encodeURIComponent(chaKeyword);
                 const chaUrl = `https://www.google.com/search?q=${chaQuery}`;
 
-                sdsBox.innerHTML += `<a href="${chaUrl}" target="_blank" class="sds-link-btn" style="background:#558b2f; border-color:#dcedc8;">🇹🇼 化學署</a>`;
+                // 將按鈕文字修改為「毒化物列管確認」，讓同仁知道搜不到 = 未列管
+                sdsBox.innerHTML += `<a href="${chaUrl}" target="_blank" class="sds-link-btn" style="background:#558b2f; border-color:#dcedc8;">🇹🇼 毒化物列管確認</a>`;
          
             } else {
                 sdsBox.innerHTML = '<span style="color:#666; font-size:0.9rem;">此物質無 CAS 資訊，無法提供外部連結。</span>';
