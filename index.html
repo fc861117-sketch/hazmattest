@@ -410,6 +410,14 @@
             <div id="d-sds-links" style="display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap;">
         </div>
     </div>
+        <div class="data-row" id="row-tcs" style="display:none; border-left-color:#9c27b0; background:rgba(156,39,176,0.15);">
+            <div class="data-label" style="color:#ce93d8;">☣️ 環境部化學署 列管毒性及關注化學物質</div>
+            <div class="data-value">
+                <button id="btn-tcs" style="background:#9c27b0; color:white; border:none; padding:10px 15px; border-radius:6px; font-weight:bold; cursor:pointer; width:100%; font-size:1.05rem; margin-top:8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                    🔗 開啟 ERIC 毒災防救資訊查詢
+                </button>
+            </div>
+        </div>
            <div class="data-row"><div class="data-label">滅火與禁忌注意事項</div><div class="data-value" id="d-tactics"></div></div>
         
         <div class="data-row" id="row-reaction" style="display:none; border-left-color:#ffeb3b; background:rgba(255,235,59,0.1);">
@@ -669,6 +677,22 @@ function showDetail(item) {
 } else {
             rowReaction.style.display = 'none';  // 沒資料就隱藏
         }
+    // 🌟 新增：判斷並顯示「化學署列管毒化物」按鈕
+            const rowTcs = document.getElementById('row-tcs');
+            const btnTcs = document.getElementById('btn-tcs');
+            // 只要資料庫有設定 isTCS: true，就顯示按鈕
+            if (item.isTCS === true) {
+                rowTcs.style.display = 'block';
+                // 設定點擊按鈕後，開新分頁連往環境部化學雲/ERIC，並自動帶入 CAS 號碼搜尋
+                btnTcs.onclick = () => {
+                    const searchQuery = item.cas ? item.cas : item.nameTW;
+                    // 使用環境部化學物質查詢網址 (利用 CAS 號碼精準搜尋)
+                    const targetUrl = `https://chem.moenv.gov.tw/home/search?kw=${searchQuery}`;
+                    window.open(targetUrl, '_blank');
+                };
+            } else {
+                rowTcs.style.display = 'none'; // 非列管物質則隱藏
+            }
 
         // 👇 將 SDS 按鈕生成的程式碼，貼在這個位置 👇
         const sdsBox = document.getElementById('d-sds-links');
