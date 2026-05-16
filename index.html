@@ -704,13 +704,18 @@ function showDetail(item) {
                 const merckUrl = `https://www.sigmaaldrich.com/TW/zh/search/${cleanCas}?focus=products&term=${cleanCas}&type=product`;
                 sdsBox.innerHTML += `<a href="${merckUrl}" target="_blank" class="sds-link-btn" style="background:#00838f;">Merck 台灣</a>`;
 
-                // 5. 環境部化學署 (毒性及關注化學物質列管確認)
-                const chaKeyword = `"${cleanCas}" inurl:toch -事故 -案例 site:cha.gov.tw`;
-                const chaQuery = encodeURIComponent(chaKeyword);
-                const chaUrl = `https://www.google.com/search?q=${chaQuery}`;
+                // 5. 環境部化學署 (突破動態表單：點擊自動複製 CAS 並開啟查詢頁)
+                const chaUrl = 'https://www.cha.gov.tw/sp-toch-list-1.html';
 
-                // 將按鈕文字修改為「毒化物列管確認」，讓同仁知道搜不到 = 未列管
-                sdsBox.innerHTML += `<a href="${chaUrl}" target="_blank" class="sds-link-btn" style="background:#558b2f; border-color:#dcedc8;">🇹🇼 毒化物列管確認</a>`;
+                // 綁定 onclick 事件，利用 navigator.clipboard.writeText 寫入剪貼簿
+                sdsBox.innerHTML += `
+                    <a href="${chaUrl}" 
+                       target="_blank" 
+                       onclick="navigator.clipboard.writeText('${cleanCas}'); alert('已自動複製 CAS 碼：${cleanCas}\\n\\n請在開啟的化學署網頁中，直接【貼上】查詢。');" 
+                       class="sds-link-btn" 
+                       style="background:#558b2f; border-color:#dcedc8;">
+                       🇹🇼 毒化物查詢 (自動複製CAS)
+                    </a>`;
          
             } else {
                 sdsBox.innerHTML = '<span style="color:#666; font-size:0.9rem;">此物質無 CAS 資訊，無法提供外部連結。</span>';
