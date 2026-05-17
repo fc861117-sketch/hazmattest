@@ -470,12 +470,13 @@ function handleSearch() {
                 (item.cas && item.cas.toLowerCase().includes(query))
             );
 
-            // 🌟 2. 自動去重機制：防止 database.js 裡面有重複複製的物質
+             // 🌟 2. 自動去重機制：改用「中文名稱」防呆，避免誤殺同 UN 號碼的不同物質
             const uniqueMatches = [];
-            const seenUNs = new Set();
+            const seenNames = new Set();
             for (const item of matches) {
-                if (!seenUNs.has(item.un)) {
-                    seenUNs.add(item.un);
+                // 這裡把 item.un 改成了 item.nameTW
+                if (!seenNames.has(item.nameTW)) {
+                    seenNames.add(item.nameTW);
                     uniqueMatches.push(item);
                 }
             }
